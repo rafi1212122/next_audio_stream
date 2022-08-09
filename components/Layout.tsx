@@ -1,9 +1,11 @@
-import { AppShell, Navbar, Header, Group, ActionIcon, Stack, Anchor, Text, Slider } from '@mantine/core';
+import { AppShell, Navbar, Header, Group, ActionIcon, Stack, Anchor, Text, Slider, Footer, Menu } from '@mantine/core';
 import { useContext, useEffect, useState } from 'react';
 import DataContext from '../helpers/DataContext';
 import { useDebouncedValue, useForceUpdate } from '@mantine/hooks';
 import useHover from '../helpers/useHover';
 import { Howl } from 'howler';
+import Link from 'next/link';
+import { useUser } from '@supabase/auth-helpers-react';
 
 export default function Layout({ children }){
     type DataContextTypes = [playerState: any, setPlayerState: any, sound: Howl, queue: Array<String>, setQueue: any]
@@ -12,6 +14,7 @@ export default function Layout({ children }){
     const [playerState, setPlayerState, sound, queue, setQueue] = useContext<DataContextTypes>(DataContext)
     const [audioProgress, setAudioProgress] = useState(sound?.seek())
     const [debouncedSlider] = useDebouncedValue(audioProgress, 50);
+    const { user } = useUser();
 
     useEffect(()=>{
         sound?.seek(debouncedSlider)
@@ -20,12 +23,40 @@ export default function Layout({ children }){
     return(
         <AppShell
             header={
-                <Header styles={(theme) => ({
+                <Header px={'xl'} style={{ zIndex:1000, display: 'flex', justifyContent: 'flex-end', 'alignItems': 'center' }} styles={(theme) => ({
                     root: { backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[9] : theme.colors.gray[0] },
-                })} height={60}></Header>
+                })} height={60}>
+                    <Menu position='bottom-end' shadow="md" width={200}>
+                        <Menu.Target>
+                            <ActionIcon size={'lg'} color='blue' variant='light'>
+                                <svg xmlns="http://www.w3.org/2000/svg" width={20} viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                                </svg>
+                            </ActionIcon>
+                        </Menu.Target>
+
+                        <Menu.Dropdown>
+                            {/* <Menu.Label>Application</Menu.Label>
+                            <Menu.Item icon={<IconSett size={14} />}>Settings</Menu.Item>
+                            <Menu.Item icon={<IconMessageCircle size={14} />}>Messages</Menu.Item>
+                            <Menu.Item icon={<IconPhoto size={14} />}>Gallery</Menu.Item>
+                             */}
+                            {/* <Menu.Label>Danger zone</Menu.Label> */}
+                            {user?.id?<Menu.Item component='a' href='/api/auth/logout' color="red" icon={<svg xmlns="http://www.w3.org/2000/svg" width={20} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>}>
+                                Logout
+                            </Menu.Item>:<>
+                            <Link href={'/login'} passHref>
+                                <Menu.Item component={'a'} icon={<svg xmlns="http://www.w3.org/2000/svg" width={20} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>}>
+                                    Login
+                                </Menu.Item>
+                            </Link>
+                            </>}
+                        </Menu.Dropdown>
+                    </Menu>
+                </Header>
             }
             footer={
-                <Header styles={(theme) => ({
+                <Footer styles={(theme) => ({
                     root: { backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[8] : theme.colors.gray[1], borderTop:`1px solid ${theme.colorScheme === 'dark' ? theme.colors.gray[9] : theme.colors.gray[4]}` },
                 })} height={90}>
                     <Group style={{ height:'100%', padding:15 }} position='apart'>
@@ -91,7 +122,7 @@ export default function Layout({ children }){
                             }} labelTransition={'pop'} labelTransitionDuration={150} disabled={playerState.isMuted} min={0} size={'sm'} max={100} style={{ width:'7vw' }} value={playerState.volume} onChange={(val)=>setPlayerState(playerState=>({...playerState, volume:val}))}/>
                         </Group>
                     </Group>
-                </Header>
+                </Footer>
             }
             navbar={
                 <Navbar

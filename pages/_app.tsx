@@ -1,11 +1,15 @@
 import { MantineProvider } from '@mantine/core'
 import { useColorScheme } from '@mantine/hooks'
 import { useEffect, useState } from 'react'
-import {Howl, Howler, HowlOptions} from 'howler';
+import { Howl } from 'howler';
 import { useHotkeys } from '@mantine/hooks';
+import { UserProvider } from '@supabase/auth-helpers-react';
+import { supabaseClient } from '@supabase/auth-helpers-nextjs';
 import Layout from '../components/Layout'
 import DataContext from '../helpers/DataContext'
 import '../styles/globals.css'
+import { RouterTransition } from '../components/RouterTransition';
+import { NotificationsProvider } from '@mantine/notifications';
 
 function MyApp({ Component, pageProps }) {
   const [sound, setSound] = useState<Howl>()
@@ -27,7 +31,7 @@ function MyApp({ Component, pageProps }) {
       return
     }
     const soundInit = new Howl({
-      src: [queue[0]],
+      src: [queue[0]?.url],
       html5: true,
       autoplay: playerState.isPlaying,
       volume: playerState.volume/100,
@@ -64,11 +68,16 @@ function MyApp({ Component, pageProps }) {
 
   return(
     <MantineProvider theme={{ colorScheme: useColorScheme() }} withNormalizeCSS withGlobalStyles>
-      <DataContext.Provider value={[playerState, setPlayerState, sound, queue, setQueue]}>
-        <Layout>
-          <Component {...pageProps} />
-        </Layout>
-      </DataContext.Provider>
+      <UserProvider supabaseClient={supabaseClient}>
+        <DataContext.Provider value={[playerState, setPlayerState, sound, queue, setQueue]}>
+          <RouterTransition/>
+          <Layout>
+            <NotificationsProvider autoClose={3000} zIndex={10000} position={'top-right'}>
+              <Component {...pageProps} />
+            </NotificationsProvider>
+          </Layout>
+        </DataContext.Provider>
+      </UserProvider>
     </MantineProvider>
   )
 }
