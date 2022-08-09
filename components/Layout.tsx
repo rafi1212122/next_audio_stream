@@ -70,7 +70,9 @@ export default function Layout({ children }){
                                     </svg>
                                 </ActionIcon>
                             </Group>
-                            <ProgressSlider/>
+                            <div ref={progressRef}>
+                                <ProgressSlider/>
+                            </div>
                         </Stack>
                         <Group ref={volumeRef} spacing={10}>
                             <ActionIcon style={{ height:20, width:20 }} onClick={()=>setPlayerState(playerState=>({...playerState, isMuted:!playerState.isMuted}))}>
@@ -113,7 +115,7 @@ export default function Layout({ children }){
 
         return (
                 <Group spacing={10}>
-                    <Text size="sm">
+                    <Text style={{ cursor:'default' }} size="sm">
                         {sound
                             ? new Date(sound?.seek() * 1000)
                                     .toISOString()
@@ -121,7 +123,6 @@ export default function Layout({ children }){
                             : ""}
                     </Text>
                     <Slider
-                        ref={progressRef}
                         styles={{
                             thumb: {
                                 backgroundColor: "white",
@@ -145,7 +146,7 @@ export default function Layout({ children }){
                             width: "25vw",
                         }}
                     />
-                    <Text size="sm">
+                    <Text style={{ cursor:'default' }} size="sm">
                         {sound
                             ? new Date(sound?.duration() * 1000)
                                     .toISOString()
