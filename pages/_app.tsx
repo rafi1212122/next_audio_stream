@@ -1,25 +1,25 @@
 import { MantineProvider } from '@mantine/core'
 import { useColorScheme } from '@mantine/hooks'
 import { useEffect, useState } from 'react'
-import {Howl, Howler} from 'howler';
+import {Howl, Howler, HowlOptions} from 'howler';
+import { useHotkeys } from '@mantine/hooks';
 import Layout from '../components/Layout'
 import DataContext from '../helpers/DataContext'
 import '../styles/globals.css'
 
 function MyApp({ Component, pageProps }) {
-  const [sound, setSound] = useState()
+  const [sound, setSound] = useState<Howl>()
   const [queue, setQueue] = useState([])
   const [playerState, setPlayerState] = useState({
-    isPlaying:false,
+    isPlaying: true,
     isMuted: false,
     isLooping: false,
-    volume: 100
+    volume: 50
   })
-  const [ts, setTs] = useState(0)
 
-  useEffect(()=>{
-    let playerRefresh = setInterval(()=>setTs(new Date().getTime()), 1000)
-  }, [])
+  useHotkeys([
+    ['space', ()=>setPlayerState(playerState=>({...playerState, isPlaying:!playerState.isPlaying}))]
+  ])
 
   useEffect(()=>{
     console.log(queue)
@@ -31,7 +31,8 @@ function MyApp({ Component, pageProps }) {
       html5: true,
       autoplay: playerState.isPlaying,
       volume: playerState.volume/100,
-      onend: ()=>setQueue(queue.slice(1))
+      onend: ()=>setQueue(queue.slice(1)),
+      onplay: ()=>console.log('playing'),
     });
     setSound(soundInit)
   }, [queue])

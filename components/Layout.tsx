@@ -1,12 +1,21 @@
 import { AppShell, Navbar, Header, Group, ActionIcon, Stack, Anchor, Text, Slider } from '@mantine/core';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import DataContext from '../helpers/DataContext';
+import { useDebouncedValue, useForceUpdate } from '@mantine/hooks';
 import useHover from '../helpers/useHover';
+import { Howl } from 'howler';
 
 export default function Layout({ children }){
+    type DataContextTypes = [playerState: any, setPlayerState: any, sound: Howl, queue: Array<String>, setQueue: any]
     const [volumeRef, isVolumeHovered] = useHover()
     const [progressRef, isProgressHovered] = useHover()
-    const [playerState, setPlayerState, sound, queue, setQueue] = useContext(DataContext)
+    const [playerState, setPlayerState, sound, queue, setQueue] = useContext<DataContextTypes>(DataContext)
+    const [audioProgress, setAudioProgress] = useState(sound?.seek())
+    const [debouncedSlider] = useDebouncedValue(audioProgress, 50);
+
+    useEffect(()=>{
+        sound?.seek(debouncedSlider)
+    }, [debouncedSlider])
 
     return(
         <AppShell
@@ -61,14 +70,7 @@ export default function Layout({ children }){
                                     </svg>
                                 </ActionIcon>
                             </Group>
-                            <Group spacing={10}>
-                                <Text size='sm'>{sound?new Date(sound?.seek() * 1000).toISOString().substring(14, 19):''}</Text>
-                                <Slider ref={progressRef} styles={{ 
-                                    thumb: { backgroundColor: 'white', opacity: isProgressHovered?1:0 },
-                                    track: { '&:before': { right: 0, left: 0 } }
-                                 }} draggable={'false'} showLabelOnHover={false} label={null} value={sound?.seek()} onChange={val=>sound.seek(val)} size={'sm'} max={sound?.duration()} style={{ width:'25vw' }}/>
-                                <Text size='sm'>{sound?new Date(sound?.duration() * 1000).toISOString().substring(14, 19):''}</Text>
-                            </Group>
+                            <ProgressSlider/>
                         </Stack>
                         <Group ref={volumeRef} spacing={10}>
                             <ActionIcon style={{ height:20, width:20 }} onClick={()=>setPlayerState(playerState=>({...playerState, isMuted:!playerState.isMuted}))}>
@@ -102,4 +104,55 @@ export default function Layout({ children }){
             {children}
         </AppShell>
     )
-}
+
+    function ProgressSlider() {
+        const forceUpdate = useForceUpdate()
+        useEffect(()=>{
+            let playerRefresh = setInterval(()=>forceUpdate(), 1000)
+        }, [])
+
+        return (
+                <Group spacing={10}>
+                    <Text size="sm">
+                        {sound
+                            ? new Date(sound?.seek() * 1000)
+                                    .toISOString()
+                                    .substring(14, 19)
+                            : ""}
+                    </Text>
+                    <Slider
+                        ref={progressRef}
+                        styles={{
+                            thumb: {
+                                backgroundColor: "white",
+                                opacity: isProgressHovered ? 1 : 0,
+                            },
+                            track: {
+                                "&:before": {
+                                    right: 0,
+                                    left: 0,
+                                },
+                            },
+                        }}
+                        draggable={"false"}
+                        showLabelOnHover={false}
+                        label={null}
+                        value={sound?.seek()}
+                        onChange={(val) => setAudioProgress(val)}
+                        size={"sm"}
+                        max={sound?.duration()}
+                        style={{
+                            width: "25vw",
+                        }}
+                    />
+                    <Text size="sm">
+                        {sound
+                            ? new Date(sound?.duration() * 1000)
+                                    .toISOString()
+                                    .substring(14, 19)
+                            : ""}
+                    </Text>
+                </Group>
+            );
+    }
+  }
