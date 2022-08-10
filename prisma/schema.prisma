@@ -10,27 +10,50 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  USER
+  STAFF
+  ADMIN
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  level     Role     @default(USER)
+  Music     Music[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Music {
-  id       String @id @default(cuid())
-  title    String
-  userId   String
-  artist   Artist @relation(fields: [artistId], references: [id])
-  artistId String
-  album    Album  @relation(fields: [albumId], references: [id])
-  albumId  String
+  id        String   @id @default(cuid())
+  title     String
+  user      User     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId    String
+  artist    Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  artistId  String
+  album     Album    @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  albumId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Artist {
-  id     String  @id @default(cuid())
-  name   String
-  musics Music[]
-  albums Album[]
+  id        String   @id @default(cuid())
+  name      String
+  musics    Music[]
+  albums    Album[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Album {
-  id       String  @id @default(cuid())
-  name     String
-  artist   Artist  @relation(fields: [artistId], references: [id])
-  artistId String
+  id        String   @id @default(cuid())
+  name      String
+  artist    Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  artistId  String
   musics    Music[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

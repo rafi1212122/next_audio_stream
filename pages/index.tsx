@@ -1,5 +1,6 @@
 import { Input, ActionIcon } from "@mantine/core"
 import { getHotkeyHandler } from "@mantine/hooks"
+import Head from "next/head"
 import { useContext, useEffect, useRef, useState } from "react"
 import DataContext from "../helpers/DataContext"
 
@@ -20,6 +21,9 @@ export default function Home() {
 
   return (
     <div>
+      <Head>
+        <title>Home</title>
+      </Head>
       <Input.Wrapper id="add" label={'Add to queue'}>
         <Input autoComplete="off" onKeyDown={getHotkeyHandler([
             ['Enter', addToQueue],
@@ -28,8 +32,7 @@ export default function Home() {
             <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
           </svg>
         </ActionIcon>} id="add" placeholder="audio url"/>
-      </Input.Wrapper>
-      
+      </Input.Wrapper>   
     </div>
   )
 }

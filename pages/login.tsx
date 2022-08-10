@@ -1,41 +1,55 @@
-import { Card, Input, Title, Divider, Button } from '@mantine/core';
-import { showNotification } from '@mantine/notifications';
-import { getUser, supabaseClient, withPageAuth } from '@supabase/auth-helpers-nextjs';
+import { Card, Input, Title, Divider, Button, LoadingOverlay, Loader } from '@mantine/core';
+import { hideNotification, showNotification } from '@mantine/notifications';
+import axios from 'axios';
 import { GetServerSidePropsContext } from 'next';
+import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { FormEvent, useRef } from 'react';
+import { ChangeEvent, FormEvent, useRef, useState } from 'react';
 
 const LoginPage = () => {
+  const [usernameInput, setUsernameInput] = useState('')
+  const [passwordInput, setPasswordInput] = useState('')
+  const [submitting, setSubmitting] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
   const router = useRouter()
 
   const onFromSubmit = async (e: FormEvent) => {
+    hideNotification('login-error')
     e.preventDefault()
-    const { error } = await supabaseClient.auth.signIn({
-      email: formRef.current.email.value,
-      password: formRef.current.pass.value,
-    })
-    if(error){
+    try {
+      setSubmitting(true)
+      await axios.post('/api/auth/login', {
+          username: usernameInput,
+          password: passwordInput
+      })
+    } catch (err) {
       return showNotification({
-        id: 'login-error',
-        title: "Error!",
-        message: error.message,
-        color: 'red',
-        radius: 'xs',
+          id: 'login-error',
+          title: "Error!",
+          message: err?.response?.data?.message,
+          color: 'red',
+          radius: 'xs',
       });
+    } finally {
+      setSubmitting(false)
     }
+
     showNotification({
-      id: 'login-success',
-      title: "Success!",
-      message: "Logged in successfuly",
-      color: 'green',
-      radius: 'xs',
+        id: 'login-success',
+        title: "Success!",
+        message: "Logged in successfuly",
+        color: 'green',
+        radius: 'xs',
     });
-    router.push('/')
+    return router.push('/')
   }
 
   return (
+  <>
+    <Head>
+        <title>Login</title>
+    </Head>
     <form onSubmit={onFromSubmit} ref={formRef}>
     <Card p="xl">
       <Card.Section sx={(theme)=> ({
@@ -50,12 +64,13 @@ const LoginPage = () => {
       <Card.Section sx={(theme)=> ({
         borderBottom: '1px solid',
         borderColor: theme.colorScheme==='dark'?theme.colors.gray[7]:theme.colors.gray[3]
-      })} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }} px='md' py={'sm'}>
-        <Input.Wrapper id={'email'} label="Email Address">
-          <Input required id={'email'} type='email' placeholder="Email Address" />
+      })} style={{ position:'relative', display: 'flex', flexDirection: 'column', gap: '0.5rem' }} px='md' py={'sm'}>
+        <LoadingOverlay loaderProps={{ size: 'md', color: 'blue', variant: 'oval' }} visible={submitting} overlayBlur={2} />
+        <Input.Wrapper id={'username'} label="Username">
+          <Input mt={'0.1rem'} required id={'username'} type='text' placeholder="Username" value={usernameInput} onChange={(e:ChangeEvent<any>) => setUsernameInput(e.target.value)} />
         </Input.Wrapper>
         <Input.Wrapper id={'pass'} label="Password">
-          <Input required min={6} id={'pass'} type='password' placeholder="Password" />
+          <Input mt={'0.1rem'} required min={6} id={'pass'} type='password' placeholder="Password" value={passwordInput} onChange={(e:ChangeEvent<any>) => setPasswordInput(e.target.value)} />
         </Input.Wrapper>
       </Card.Section>
       <Card.Section style={{ display: 'flex', justifyContent: 'space-between' }} px='md' py={'sm'}>
@@ -70,25 +85,22 @@ const LoginPage = () => {
       </Card.Section>
     </Card>
     </form>
+  </>
   );
 };
 
 export default LoginPage;
 
-export const getServerSideProps = withPageAuth({
-  authRequired: false,
-  async getServerSideProps(ctx: GetServerSidePropsContext) {
-    const { user } = await getUser(ctx);
-    if (user)
-      return {
-        redirect: {
-          destination: '/',
-          permanent: false
-        }
-      };
-    else
-      return {
-        props: {}
-      };
+export const getServerSideProps = (ctx: GetServerSidePropsContext) => {
+  if(ctx.req.cookies._token){
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    }
   }
-});
+  return{
+    props: {}
+  }
+}

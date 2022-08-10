@@ -3,15 +3,22 @@ import { useColorScheme } from '@mantine/hooks'
 import { useEffect, useState } from 'react'
 import { Howl } from 'howler';
 import { useHotkeys } from '@mantine/hooks';
-import { UserProvider } from '@supabase/auth-helpers-react';
-import { supabaseClient } from '@supabase/auth-helpers-nextjs';
 import Layout from '../components/Layout'
 import DataContext from '../helpers/DataContext'
 import '../styles/globals.css'
 import { RouterTransition } from '../components/RouterTransition';
 import { NotificationsProvider } from '@mantine/notifications';
+import { useRouter } from 'next/router';
+import axios, { AxiosResponse } from 'axios';
 
 function MyApp({ Component, pageProps }) {
+  const router =  useRouter()
+
+  if(router.pathname == "/_error"){
+    return<Component {...pageProps} />
+  }
+  
+  const [profile, setProfile] = useState({})
   const [sound, setSound] = useState<Howl>()
   const [queue, setQueue] = useState([])
   const [playerState, setPlayerState] = useState({
@@ -20,6 +27,18 @@ function MyApp({ Component, pageProps }) {
     isLooping: false,
     volume: 50
   })
+
+  useEffect(()=>{
+    getProfile()
+  }, [router.asPath])
+
+  const getProfile = async () => {
+    await axios.get('/api/auth/user').then((response: AxiosResponse) => {
+      setProfile(response.data.user)
+    }).catch(()=>{
+      setProfile(null)
+    })
+  }
 
   useHotkeys([
     ['space', ()=>setPlayerState(playerState=>({...playerState, isPlaying:!playerState.isPlaying}))]
@@ -68,16 +87,14 @@ function MyApp({ Component, pageProps }) {
 
   return(
     <MantineProvider theme={{ colorScheme: useColorScheme() }} withNormalizeCSS withGlobalStyles>
-      <UserProvider supabaseClient={supabaseClient}>
-        <DataContext.Provider value={[playerState, setPlayerState, sound, queue, setQueue]}>
-          <RouterTransition/>
-          <Layout>
-            <NotificationsProvider autoClose={3000} zIndex={10000} position={'top-right'}>
-              <Component {...pageProps} />
-            </NotificationsProvider>
-          </Layout>
-        </DataContext.Provider>
-      </UserProvider>
+      <DataContext.Provider value={[playerState, setPlayerState, sound, queue, setQueue, profile]}>
+        <RouterTransition/>
+        <Layout>
+          <NotificationsProvider autoClose={3000} zIndex={10000} position={'top-right'}>
+            <Component {...pageProps} />
+          </NotificationsProvider>
+        </Layout>
+      </DataContext.Provider>
     </MantineProvider>
   )
 }

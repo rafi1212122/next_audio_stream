@@ -1,20 +1,20 @@
-import { AppShell, Navbar, Header, Group, ActionIcon, Stack, Anchor, Text, Slider, Footer, Menu } from '@mantine/core';
+import { AppShell, Navbar, Header, Group, ActionIcon, Stack, Anchor, Text, Slider, Footer, Menu, NavLink } from '@mantine/core';
 import { useContext, useEffect, useState } from 'react';
 import DataContext from '../helpers/DataContext';
 import { useDebouncedValue, useForceUpdate } from '@mantine/hooks';
 import useHover from '../helpers/useHover';
 import { Howl } from 'howler';
 import Link from 'next/link';
-import { useUser } from '@supabase/auth-helpers-react';
+import { useRouter } from 'next/router';
 
 export default function Layout({ children }){
-    type DataContextTypes = [playerState: any, setPlayerState: any, sound: Howl, queue: Array<String>, setQueue: any]
+    type DataContextTypes = [playerState: any, setPlayerState: any, sound: Howl, queue: Array<String>, setQueue: any, profile: any]
     const [volumeRef, isVolumeHovered] = useHover()
     const [progressRef, isProgressHovered] = useHover()
-    const [playerState, setPlayerState, sound, queue, setQueue] = useContext<DataContextTypes>(DataContext)
+    const [playerState, setPlayerState, sound, queue, setQueue, profile] = useContext<DataContextTypes>(DataContext)
     const [audioProgress, setAudioProgress] = useState(sound?.seek())
     const [debouncedSlider] = useDebouncedValue(audioProgress, 50);
-    const { user } = useUser();
+    const router = useRouter()
 
     useEffect(()=>{
         sound?.seek(debouncedSlider)
@@ -42,15 +42,16 @@ export default function Layout({ children }){
                             <Menu.Item icon={<IconPhoto size={14} />}>Gallery</Menu.Item>
                              */}
                             {/* <Menu.Label>Danger zone</Menu.Label> */}
-                            {user?.id?<Menu.Item component='a' href='/api/auth/logout' color="red" icon={<svg xmlns="http://www.w3.org/2000/svg" width={20} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>}>
+                            {profile?
+                            <Menu.Item component='a' href='/api/auth/logout' data-danger color="red" icon={<svg xmlns="http://www.w3.org/2000/svg" width={20} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>}>
                                 Logout
-                            </Menu.Item>:<>
+                            </Menu.Item>:
                             <Link href={'/login'} passHref>
                                 <Menu.Item component={'a'} icon={<svg xmlns="http://www.w3.org/2000/svg" width={20} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>}>
                                     Login
                                 </Menu.Item>
                             </Link>
-                            </>}
+                            }
                         </Menu.Dropdown>
                     </Menu>
                 </Header>
@@ -128,7 +129,14 @@ export default function Layout({ children }){
                 <Navbar
                 styles={(theme) => ({
                     root: { backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[9] : theme.colors.gray[0] },
-                })} width={{ base: 300 }} height={'calc(100vh - 150px)'}></Navbar>
+                })} width={{ base: 250 }} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }} p={5} height={'calc(100vh - 150px)'}>
+                    <Link href="/" passHref>
+                        <NavLink component='a' style={{ borderRadius: '0.25rem' }} icon={<svg width={20} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>} active={router.pathname==='/'}  label="Home" />
+                    </Link>
+                    <Link href="/explore" passHref>
+                        <NavLink component='a' style={{ borderRadius: '0.25rem' }} icon={<svg width={20} xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-brand-safari" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><polyline points="8 16 10 10 16 8 14 14 8 16"></polyline><circle cx="12" cy="12" r="9"></circle></svg>} active={router.pathname==='/explore'}  label="Explore" />
+                    </Link>
+                </Navbar>
             }
             styles={(theme) => ({
                 root: { backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[2] },
