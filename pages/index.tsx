@@ -5,17 +5,15 @@ import { useContext, useEffect, useRef, useState } from "react"
 import DataContext from "../helpers/DataContext"
 
 export default function Home() {
-  const [playerState, setPlayerState, sound, queue, setQueue] = useContext(DataContext)
+  const setQueue = useContext(DataContext)[3]
+  const queue = useContext(DataContext)[2]
   const addToQueueInputRef = useRef(null)
 
   const addToQueue = async () => {
     if(!addToQueueInputRef.current.value){
       return
     }
-    let loopingState = playerState.isLooping
-    await setPlayerState(playerState=>({...playerState, isLooping:queue.length!==0?true:false}))
     await setQueue(queue.concat({url: addToQueueInputRef.current.value}))
-    await setPlayerState(playerState=>({...playerState, isLooping:loopingState}))
     addToQueueInputRef.current.value = ''
   }
 

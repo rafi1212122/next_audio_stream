@@ -1,7 +1,6 @@
 import { MantineProvider } from '@mantine/core'
 import { useColorScheme } from '@mantine/hooks'
 import { useEffect, useState } from 'react'
-import { Howl } from 'howler';
 import { useHotkeys } from '@mantine/hooks';
 import Layout from '../components/Layout'
 import DataContext from '../helpers/DataContext'
@@ -13,19 +12,17 @@ import axios, { AxiosResponse } from 'axios';
 
 function MyApp({ Component, pageProps }) {
   const router =  useRouter()
-
-  if(router.pathname == "/_error"){
-    return<Component {...pageProps} />
-  }
-  
+  const colorScheme = useColorScheme()
   const [profile, setProfile] = useState({})
-  const [sound, setSound] = useState<Howl>()
   const [queue, setQueue] = useState([])
   const [playerState, setPlayerState] = useState({
-    isPlaying: true,
-    isMuted: false,
-    isLooping: false,
-    volume: 50
+      isPlaying: false,
+      progress: 0,
+      max: 0,
+      isSeeking: false,
+      isLooping: false,
+      isMuted: false,
+      volume: 50
   })
 
   useEffect(()=>{
@@ -44,50 +41,13 @@ function MyApp({ Component, pageProps }) {
     ['space', ()=>setPlayerState(playerState=>({...playerState, isPlaying:!playerState.isPlaying}))]
   ])
 
-  useEffect(()=>{
-    console.log(queue)
-    if(playerState.isLooping){
-      return
-    }
-    const soundInit = new Howl({
-      src: [queue[0]?.url],
-      html5: true,
-      autoplay: playerState.isPlaying,
-      volume: playerState.volume/100,
-      onend: ()=>setQueue(queue.slice(1)),
-      onplay: ()=>console.log('playing'),
-    });
-    setSound(soundInit)
-  }, [queue])
-
-  useEffect(()=>{
-    if(playerState.isPlaying){
-      sound?.play()
-    }else{
-      sound?.pause()
-    }
-  }, [playerState.isPlaying])
-  
-  useEffect(()=>{
-    sound?.volume(playerState.volume/100)
-  }, [playerState.volume])
-
-  useEffect(()=>{
-    sound?.mute(playerState.isMuted)
-  }, [playerState.isMuted])
-  
-  useEffect(()=>{
-    sound?.loop(playerState.isLooping)
-    if(playerState.isLooping){
-      sound?.off('end')
-    }else{
-      sound?.on('end', ()=>setQueue(queue.slice(1)))
-    }
-  }, [playerState.isLooping])
+  if(router.pathname == "/_error"){
+    return<Component {...pageProps} />
+  }
 
   return(
-    <MantineProvider theme={{ colorScheme: useColorScheme() }} withNormalizeCSS withGlobalStyles>
-      <DataContext.Provider value={[playerState, setPlayerState, sound, queue, setQueue, profile]}>
+    <MantineProvider theme={{ colorScheme }} withNormalizeCSS withGlobalStyles>
+      <DataContext.Provider value={[playerState, setPlayerState, queue, setQueue, profile]}>
         <RouterTransition/>
         <Layout>
           <NotificationsProvider autoClose={3000} zIndex={10000} position={'top-right'}>
