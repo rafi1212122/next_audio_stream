@@ -25,12 +25,20 @@ export default function Layout({ children }){
     }, [playerState.isPlaying])
 
     useEffect(()=>{
+        if(playerState.isMuted){
+            playerRef.current.muted = true
+        }else{
+            playerRef.current.muted = false
+        }
+    }, [playerState.isMuted])
+
+    useEffect(()=>{
         playerRef.current.volume = playerState.volume/100
     }, [playerState.volume])
 
-    useEffect(()=>{
-        setPlayerState(playerState=>({...playerState, max: playerRef.current.duration}))
-    }, [])
+    // useEffect(()=>{
+    //     setPlayerState(playerState=>({...playerState, max: playerRef.current.duration}))
+    // }, [])
     
     const handleSliderChange = (e: number) => {
         clear()
@@ -158,7 +166,7 @@ export default function Layout({ children }){
                                         },
                                     }} size={'sm'} style={{ width: '25vw' }} disabled={queue.length<1} onChangeEnd={handleSliderChangeEnd} onChange={handleSliderChange} label={null} max={playerState.max} value={playerState.progress}/>
                                     <Text style={{ cursor:'default' }} size="sm">
-                                        {new Date(playerState.max * 1000||0).toISOString().substring(14, 19)}
+                                        {queue.length<1?new Date(0).toISOString().substring(14, 19):new Date(playerState.max * 1000||0).toISOString().substring(14, 19)}
                                     </Text>
                                 </Group>
                             </div>
