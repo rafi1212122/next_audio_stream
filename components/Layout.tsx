@@ -1,21 +1,31 @@
-import { AppShell, Navbar, Header, Group, ActionIcon, Stack, Anchor, Text, Slider, Footer, Menu, NavLink } from '@mantine/core';
+import { AppShell, Navbar, Header, Group, ActionIcon, Stack, Anchor, Text, Slider, Footer, Menu, NavLink, Image, AspectRatio } from '@mantine/core';
 import { useContext, useEffect, useRef, useState } from 'react';
 import DataContext from '../helpers/DataContext';
-import { useTimeout } from '@mantine/hooks';
+import { useDocumentVisibility, useTimeout } from '@mantine/hooks';
 import useHover from '../helpers/useHover';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
 export default function Layout({ children }){
+    const [manageLink, setManageLink] = useState(false)
     const [volumeRef, isVolumeHovered] = useHover()
     const [progressRef, isProgressHovered] = useHover()
     const [playerState, setPlayerState, queue, setQueue, profile] = useContext(DataContext)
     const playerRef = useRef<HTMLVideoElement>(null)
     const router = useRouter()
+    const documentState = useDocumentVisibility()
     const { start, clear } = useTimeout(() => {
         setPlayerState(playerState=>({...playerState, isSeeking: false}))
     }, 2000);
 
+    useEffect(()=>{
+        if(router.pathname.split('/')[1]==='manage'){
+            setManageLink(true)
+        }else{
+            setManageLink(false)
+        }
+    }, [router.asPath])
+    
     useEffect(()=>{
         if(playerState.isPlaying){
             playerRef.current.play()
@@ -36,9 +46,11 @@ export default function Layout({ children }){
         playerRef.current.volume = playerState.volume/100
     }, [playerState.volume])
 
-    // useEffect(()=>{
-    //     setPlayerState(playerState=>({...playerState, max: playerRef.current.duration}))
-    // }, [])
+    useEffect(()=>{
+        if(queue.length>0){
+            setPlayerState(playerState=>({...playerState, max: playerRef.current.duration}))
+        }
+    }, [])
     
     const handleSliderChange = (e: number) => {
         clear()
@@ -53,7 +65,7 @@ export default function Layout({ children }){
     }
 
     const handleTimeUpdate = () => {
-        if(playerState.isSeeking){
+        if(documentState==='hidden'||playerState.isSeeking){
             return
         }
         setPlayerState(playerState=>({ ...playerState, progress: playerRef.current.currentTime?Math.ceil(playerRef.current.currentTime):0 }))
@@ -92,7 +104,6 @@ export default function Layout({ children }){
                             <Menu.Item icon={<IconMessageCircle size={14} />}>Messages</Menu.Item>
                             <Menu.Item icon={<IconPhoto size={14} />}>Gallery</Menu.Item>
                              */}
-                            {/* <Menu.Label>Danger zone</Menu.Label> */}
                             {profile?
                             <Menu.Item component='a' href='/api/auth/logout' data-danger color="red" icon={<svg xmlns="http://www.w3.org/2000/svg" width={20} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>}>
                                 Logout
@@ -194,13 +205,36 @@ export default function Layout({ children }){
                 <Navbar
                 styles={(theme) => ({
                     root: { backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[9] : theme.colors.gray[0] },
-                })} width={{ base: 250 }} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }} p={5} height={'calc(100vh - 150px)'}>
-                    <Link href="/" passHref>
-                        <NavLink component='a' style={{ borderRadius: '0.25rem' }} icon={<svg width={20} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>} active={router.pathname==='/'}  label="Home" />
-                    </Link>
-                    <Link href="/explore" passHref>
-                        <NavLink component='a' style={{ borderRadius: '0.25rem' }} icon={<svg width={20} xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-brand-safari" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><polyline points="8 16 10 10 16 8 14 14 8 16"></polyline><circle cx="12" cy="12" r="9"></circle></svg>} active={router.pathname==='/explore'}  label="Explore" />
-                    </Link>
+                })} width={{ base: 250 }} style={{ display: 'flex', flexDirection: 'column', justifyContent:'space-between' }} height={'calc(100vh - 150px)'}>
+                    <Stack p={5} spacing={3}>
+                        <Link href="/" passHref>
+                            <NavLink component='a' style={{ borderRadius: '0.25rem' }} icon={<svg width={20} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>} active={router.pathname==='/'}  label="Home" />
+                        </Link>
+                        <Link href="/explore" passHref>
+                            <NavLink component='a' style={{ borderRadius: '0.25rem' }} icon={<svg width={20} xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-brand-safari" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><polyline points="8 16 10 10 16 8 14 14 8 16"></polyline><circle cx="12" cy="12" r="9"></circle></svg>} active={router.pathname==='/explore'}  label="Explore" />
+                        </Link>
+                        {profile&&profile.level==='ADMIN'&&<>
+                        <NavLink
+                            style={{ borderRadius: '0.25rem' }}
+                            label="Manage"
+                            opened={manageLink}
+                            onClick={()=>setManageLink(initial=>!initial)}
+                            icon={<svg xmlns="http://www.w3.org/2000/svg" width={20} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" /></svg>}
+                            childrenOffset={10}
+                        >
+                            <Link href="/manage/albums" passHref>
+                                <NavLink component='a' style={{ borderRadius: '0.25rem' }} icon={<svg xmlns="http://www.w3.org/2000/svg" width={20} viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="1"></circle><path d="M7 12a5 5 0 0 1 5 -5"></path><path d="M12 17a5 5 0 0 0 5 -5"></path></svg>} active={router.pathname==='/manage/albums'} label="Albums" />
+                            </Link>
+                            <Link href="/manage/artists" passHref>
+                                <NavLink my={3} component='a' style={{ borderRadius: '0.25rem' }} icon={<svg xmlns="http://www.w3.org/2000/svg" width={20} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" /></svg>} active={router.pathname==='/manage/artists'} label="Artists" />
+                            </Link>
+                        </NavLink>
+                        </>
+                        }
+                    </Stack>
+                    <AspectRatio style={{ backgroundImage:'url("https://storj.rafi12.cyou/storage/files/cl5t9ylr80000xwd93wupaafn/Cover_01.jpg")', backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: '#000000' }} ratio={1 / 1}>
+                        <img style={{ objectFit: 'contain', backdropFilter: 'blur(0.5rem) brightness(0.5)' }} src="https://storj.rafi12.cyou/storage/files/cl5t9ylr80000xwd93wupaafn/Cover_01.jpg"/>
+                    </AspectRatio>
                 </Navbar>
             }
             styles={(theme) => ({

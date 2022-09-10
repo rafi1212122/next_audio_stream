@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
 }
 
 datasource db {
@@ -29,6 +30,7 @@ model User {
 model Music {
   id        String   @id @default(cuid())
   title     String
+  approved  Boolean  @default(false)
   user      User     @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId    String
   artist    Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
@@ -42,6 +44,7 @@ model Music {
 model Artist {
   id        String   @id @default(cuid())
   name      String
+  altName   String
   musics    Music[]
   albums    Album[]
   createdAt DateTime @default(now())
@@ -51,6 +54,7 @@ model Artist {
 model Album {
   id        String   @id @default(cuid())
   name      String
+  albumArt  String
   artist    Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
   artistId  String
   musics    Music[]
