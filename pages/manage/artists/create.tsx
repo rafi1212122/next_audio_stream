@@ -38,7 +38,7 @@ export default function Explore() {
     }
 
     return(
-        <div>
+        <div style={{ margin: '1rem' }}>
             <Head>
                 <title>Create Artist</title>
             </Head>

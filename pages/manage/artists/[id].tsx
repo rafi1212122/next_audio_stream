@@ -5,20 +5,9 @@ import Head from "next/head"
 import { useEffect, useState } from "react";
 
 export default function Explore({ artist }:{ artist: Artist }) {
-    const [artists, setArtists] = useState([])
-
-    useEffect(()=> {
-        getArtists()
-    }, [])
-    
-    const getArtists = async () => {
-        await axios.get('/api/manage/artists').then((data)=> {
-            setArtists(data.data)
-        }).catch((err)=>console.log(err))
-    }
 
     return(
-        <div>
+        <div style={{ margin: '1rem' }}>
             <Head>
                 <title>Edit {artist.name}</title>
             </Head>
@@ -33,9 +22,15 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
         }
     })
 
-    return{
-      props: {
-        artist: JSON.parse(JSON.stringify(artist))
-      }
+    if(!artist){
+        return{
+            notFound: true
+        }
     }
-  }
+
+    return{
+        props: {
+            artist: JSON.parse(JSON.stringify(artist))
+        }
+    }
+}

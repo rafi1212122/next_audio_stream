@@ -5,8 +5,7 @@ import { useContext, useEffect, useRef, useState } from "react"
 import DataContext from "../helpers/DataContext"
 
 export default function Home() {
-  const setQueue = useContext(DataContext)[3]
-  const queue = useContext(DataContext)[2]
+  const { setQueue, queue } = useContext(DataContext)
   const addToQueueInputRef = useRef(null)
 
   const addToQueue = async () => {
@@ -18,7 +17,7 @@ export default function Home() {
   }
 
   return (
-    <div>
+    <div style={{ margin: '1rem' }}>
       <Head>
         <title>Home</title>
       </Head>

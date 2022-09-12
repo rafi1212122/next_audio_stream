@@ -1,5 +1,5 @@
 import { MantineProvider } from '@mantine/core'
-import { useColorScheme } from '@mantine/hooks'
+import { useColorScheme, useDidUpdate } from '@mantine/hooks'
 import { useEffect, useState } from 'react'
 import { useHotkeys } from '@mantine/hooks';
 import Layout from '../components/Layout'
@@ -15,6 +15,7 @@ function MyApp({ Component, pageProps }) {
   const colorScheme = useColorScheme()
   const [profile, setProfile] = useState({})
   const [queue, setQueue] = useState([])
+  const [themeOverride, setThemeOverride] = useState<0|1|2>(0)
   const [playerState, setPlayerState] = useState({
       isPlaying: false,
       progress: 0,
@@ -24,6 +25,16 @@ function MyApp({ Component, pageProps }) {
       isMuted: false,
       volume: 50
   })
+  
+  useEffect(()=> {
+    if(localStorage.getItem('theme_override')){
+      setThemeOverride(parseInt(localStorage.getItem('theme_override'))>2?2:(parseInt(localStorage.getItem('theme_override'))<1?0:1))
+    }
+  }, [])
+
+  useDidUpdate(()=> {
+    localStorage.setItem('theme_override', String(themeOverride))
+  }, [themeOverride])
 
   useEffect(()=>{
     getProfile()
@@ -46,8 +57,8 @@ function MyApp({ Component, pageProps }) {
   }
 
   return(
-    <MantineProvider theme={{ colorScheme }} withNormalizeCSS withGlobalStyles>
-      <DataContext.Provider value={[playerState, setPlayerState, queue, setQueue, profile]}>
+    <MantineProvider theme={{ colorScheme: themeOverride?`${themeOverride>1?'dark':'light'}`:colorScheme }} withNormalizeCSS withGlobalStyles>
+      <DataContext.Provider value={{ playerState, setPlayerState, queue, setQueue, profile, themeOverride, setThemeOverride }}>
         <RouterTransition/>
         <Layout>
           <NotificationsProvider autoClose={3000} zIndex={10000} position={'top-right'}>

@@ -1,6 +1,6 @@
 import Head from "next/head"
 
-export default function Explore() {
+export default function ManageAlbums() {
     return(
         <div>
             <Head>

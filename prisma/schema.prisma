@@ -17,6 +17,11 @@ enum Role {
   ADMIN
 }
 
+enum AlbumType {
+  SINGLE
+  ALBUM
+}
+
 model User {
   id        String   @id @default(cuid())
   username  String   @unique
@@ -28,17 +33,20 @@ model User {
 }
 
 model Music {
-  id        String   @id @default(cuid())
-  title     String
-  approved  Boolean  @default(false)
-  user      User     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  userId    String
-  artist    Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
-  artistId  String
-  album     Album    @relation(fields: [albumId], references: [id], onDelete: Cascade)
-  albumId   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  title       String
+  altTitle    String
+  resourceKey String
+  approved    Boolean  @default(false)
+  albumIndex  Int
+  streams     BigInt   @default(0)
+  user        User     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId      String
+  album       Album    @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  albumId     String
+  artists     Artist[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Artist {
@@ -52,12 +60,15 @@ model Artist {
 }
 
 model Album {
-  id        String   @id @default(cuid())
-  name      String
-  albumArt  String
-  artist    Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
-  artistId  String
-  musics    Music[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String    @id @default(cuid())
+  name        String
+  albumArt    String
+  releaseDate DateTime
+  type        AlbumType
+  approved    Boolean   @default(false)
+  artist      Artist    @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  artistId    String
+  musics      Music[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }

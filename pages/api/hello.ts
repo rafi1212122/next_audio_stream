@@ -4,7 +4,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { faker } from '@faker-js/faker'
 
 export default async function handler(req:NextApiRequest, res:NextApiResponse) {
-  // for (let index = 0; index < 100; index++) {
+  // for (let index = 0; index < 1000; index++) {
   //   await prisma.artist.create({
   //       data: {
   //           name: faker.name.middleName(),
@@ -12,5 +12,6 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
   //       }
   //   })
   // }
+  // await prisma.album.deleteMany()
   res.status(200).json({ name: 'Done!' })
 }

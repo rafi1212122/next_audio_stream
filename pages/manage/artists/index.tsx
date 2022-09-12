@@ -22,7 +22,7 @@ export default function Explore() {
     }
 
     return(
-        <div>
+        <div style={{ margin: '1rem' }}>
             <Head>
                 <title>Manage Artists</title>
             </Head>
@@ -57,7 +57,7 @@ export default function Explore() {
                     })}
                 </tbody>
             </Table>
-            <Pagination page={currentPage} onChange={setCurrentPage} pt={'1rem'} total={Math.ceil(artistsCount/15)} withEdges/>
+            {artistsCount>15&&<Pagination page={currentPage} onChange={setCurrentPage} pt={'1rem'} total={Math.ceil(artistsCount/15)} withEdges/>}
         </div>
     );
 }
