@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { prisma } from '../../../helpers/prismaConnect'
+import { prisma } from '../../../../helpers/prismaConnect'
 
 export default async function handler(req:NextApiRequest, res:NextApiResponse) {
     switch(req.method){

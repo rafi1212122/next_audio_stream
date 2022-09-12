@@ -29,7 +29,11 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
             const newData = await prisma.album.create({
                 data: {
                     name,
-                    artistId,
+                    artists: {
+                        connect: {
+                            id: artistId
+                        }
+                    },
                     releaseDate: dayjs(releaseDate).format(),
                     type,
                     albumArt: uploadImage.Key,

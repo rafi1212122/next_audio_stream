@@ -32,6 +32,9 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
                         select: {
                             albumArt: true
                         },
+                        orderBy: {
+                            releaseDate: 'desc'
+                        },
                         take: 1
                     }
                 },

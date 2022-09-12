@@ -66,8 +66,7 @@ model Album {
   releaseDate DateTime
   type        AlbumType
   approved    Boolean   @default(false)
-  artist      Artist    @relation(fields: [artistId], references: [id], onDelete: Cascade)
-  artistId    String
+  artists     Artist[]
   musics      Music[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

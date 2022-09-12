@@ -1,6 +1,7 @@
-import { Button, Card, FileButton, Group, Input, LoadingOverlay, Text, Title } from "@mantine/core"
+import { Button, Card, FileButton, Group, Input, LoadingOverlay, MultiSelect, Text, Title } from "@mantine/core"
 import { showNotification } from "@mantine/notifications";
-import axios, { AxiosError, AxiosResponse } from "axios";
+import { Artist } from "@prisma/client";
+import axios from "axios";
 import { GetServerSidePropsContext } from "next"
 import Head from "next/head"
 import Link from "next/link";
@@ -15,6 +16,7 @@ export default function AlbumNewSong({ album }) {
     const [titleInput, setTitleInput] = useState("");
     const [altTitleInput, setAltTitleInput] = useState("");
     const [albumIndexInput, setAlbumIndexInput] = useState<number>();
+    const [selectArtistInput, setSelectArtistInput] = useState([]);
     const router =  useRouter()
 
     useEffect(()=> {
@@ -40,7 +42,7 @@ export default function AlbumNewSong({ album }) {
         await axios.post('/api/musics', {
             title: titleInput,
             altTitle: altTitleInput,
-            artistId: album.artist.id,
+            artistIds: selectArtistInput,
             albumId: album.id,
             albumIndex: albumIndexInput,
             audio: base64File,
@@ -95,6 +97,16 @@ export default function AlbumNewSong({ album }) {
                     <Input.Wrapper id={'alt-title'} label="Alernative Title">
                         <Input autoComplete="off" mt={'0.1rem'} required id={'alt-title'} type='text' placeholder="Alernative (Secondary) Title - Optional" value={altTitleInput} onChange={(e:ChangeEvent<any>) => setAltTitleInput(e.target.value)}/>
                     </Input.Wrapper>
+                    <MultiSelect
+                        label="Artist"
+                        multiple
+                        styles={{ input: { marginTop: '0.1rem' } }}
+                        value={selectArtistInput}
+                        onChange={setSelectArtistInput}
+                        placeholder="Select Artists"
+                        description={'Select Artists (can be multiple)'}
+                        data={album.artists.map((a: Artist)=>{return{ value: a.id, label: `${a.name} ${a.altName&&`(${a.altName})`}` }})}
+                    />
                     <Input.Wrapper description="Used for sorting in Album" id={'album-index'} label="Album Index">
                         <Input autoComplete="off" mt={'0.1rem'} required id={'album-index'} type='number' placeholder="Album Index (Track Number)" value={albumIndexInput} onChange={(e:ChangeEvent<any>) => setAlbumIndexInput(e.target.value)}/>
                     </Input.Wrapper>
@@ -125,11 +137,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
                 id: String(ctx.params.id)
             },
             include: {
-                artist: {
-                    select: {
-                        id: true
-                    }
-                }
+                artists: true
             }
         })))
       }

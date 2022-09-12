@@ -15,10 +15,10 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
     if(!decodedToken) return res.status(403).json({ message: "You must be logged in to use this feature" })
     switch(req.method){
         case'POST':
-            const { title, altTitle, audio, artistId, albumId, albumIndex } = req.body
-            if(!title||!audio||!artistId||!albumId||!albumIndex)return res.status(400).json({ message: "Invalid body!" })
-            let audioBase = audio.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-            if(!audio.startsWith('data:audio')||audioBase.length<3)return res.status(400).json({ message: "Invalid audio!" })
+            const { title, altTitle, audio, artistIds, albumId, albumIndex } = req.body
+            if(!title||!audio||!artistIds||!albumId||!albumIndex)return res.status(400).json({ message: "Invalid body!" })
+            let audioBase = audio.match(/^data:([A-Za-z0-9-+\/]+);base64,(.+)$/);
+            if(!(audio.startsWith('data:audio')||audio.startsWith('data:video/webm'))||audioBase.length<3)return res.status(400).json({ message: "Invalid audio!" })
             const s3 = new AWS.S3({
                 accessKeyId: process.env.S3_ACCESS_KEY ,
                 secretAccessKey: process.env.S3_SECRET_KEY ,
@@ -39,9 +39,11 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
                     resourceKey: uploadAudio.Key,
                     albumIndex: parseInt(albumIndex),
                     artists: {
-                        connect: {
-                            id: String(artistId)
-                        }
+                        connect: artistIds.map((id)=>{
+                            return {
+                                id: String(id)
+                            }
+                        })
                     },
                 }
             })
@@ -58,7 +60,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
 export const config = {
     api: {
         bodyParser: {
-            sizeLimit: '75MB'
+            sizeLimit: '200MB'
         }
     }
 }
