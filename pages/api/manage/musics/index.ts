@@ -39,7 +39,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
                     }
                 }
             })
-            return res.json(JSON.parse(JSON.stringify({ musics, count: await prisma.artist.count() }, (key, value) => (typeof value === 'bigint' ? value.toString() : value))))
+            return res.json(JSON.parse(JSON.stringify({ musics, count: await prisma.music.count() }, (key, value) => (typeof value === 'bigint' ? value.toString() : value))))
         default:
             return res.status(405).json({ message: req.method+' method is not allowed!' })
     }

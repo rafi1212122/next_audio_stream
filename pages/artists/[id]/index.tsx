@@ -15,7 +15,7 @@ export default function ArtistPage({ artist }) {
             <Head>
                 <title>{`${artist.name} ${artist.altName&&`(${artist.altName})`}`}</title>
             </Head>
-            <div style={{ backgroundImage: `url(${artist.albums.length>0?`/api/files/${artist.albums[0].albumArt}?q=75&w=512`:"https://storj.rafi12.cyou/storage/files/cl7w0go0z0009seqr6rpma22a/Cover_02.jpg"})`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundPosition: 'top', backgroundColor: '#000000' }}>
+            <div style={{ backgroundImage: `url(${artist.albums.length>0?`/api/files/${artist.albums[0].albumArt}?q=75&w=512`:"https://dummyimage.com/512x512/555/555"})`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundPosition: 'top', backgroundColor: '#000000' }}>
                 <div style={{ minHeight: '25vh', display: 'flex', backdropFilter: 'blur(0.3rem) brightness(0.7)' }}>
                     <Stack m={'1rem'} style={{ alignSelf: 'flex-end' }} spacing={3}>
                         <Title style={{ color:'white', textShadow: "0 0 0.25rem rgb(0 0 0 / 40%)" }} order={1}>{artist.name}</Title>

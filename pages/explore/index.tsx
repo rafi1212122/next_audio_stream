@@ -58,7 +58,7 @@ export default function Explore() {
                         <Link passHref href={`/artists/${i.id}`}>
                             <Card component="a" shadow="sm" p="sm" radius="md" withBorder>
                                 <Group style={{ alignItems: 'flex-start' }}>
-                                    <Image height={'7rem'} width={'7rem'} radius={'sm'} src={`${i.albums.length>0?`/api/files/${i.albums[0].albumArt}?q=75&w=512`:"https://storj.rafi12.cyou/storage/files/cl5t9ylr80000xwd93wupaafn/Cover_01.jpg"}`}/>
+                                    <Image height={'7rem'} width={'7rem'} radius={'sm'} src={`${i.albums.length>0?`/api/files/${i.albums[0].albumArt}?q=75&w=512`:"https://dummyimage.com/512x512/555/555"}`}/>
                                     <Stack spacing={0} pt={'sm'}>
                                         <Text weight={500}>{i.name}</Text>
                                         <Text size="sm" color="dimmed">{i.altName}</Text>

@@ -24,6 +24,26 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
                                 contains: req.query.q,
                                 mode: 'insensitive'
                             }
+                        },
+                        {
+                            musics: {
+                                some: {
+                                    OR: [
+                                        {
+                                            title: {
+                                                contains: req.query.q,
+                                                mode: 'insensitive'
+                                            },
+                                        },
+                                        {
+                                            altTitle: {
+                                                contains: req.query.q,
+                                                mode: 'insensitive'
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
                         }
                     ]
                 },
@@ -36,6 +56,13 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
                             releaseDate: 'desc'
                         },
                         take: 1
+                    }
+                },
+                orderBy:{
+                    _relevance: {
+                        fields: ['name', 'altName'],
+                        sort: 'desc',
+                        search: req.query.q.split(' ').join(' | '),
                     }
                 },
                 take: 5,
@@ -76,7 +103,8 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
                                 }
                             }
                         }
-                    ]
+                    ],
+                    approved: true
                 },
                 include: {
                     album: {

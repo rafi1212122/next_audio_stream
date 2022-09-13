@@ -1,3 +1,4 @@
+import { Card, Title } from "@mantine/core";
 import { Artist } from "@prisma/client";
 import axios from "axios";
 import { GetServerSidePropsContext } from "next";
@@ -11,6 +12,11 @@ export default function Explore({ artist }:{ artist: Artist }) {
             <Head>
                 <title>Edit {artist.name}</title>
             </Head>
+            <Card>
+                <Card.Section p={'sm'}>
+                    <Title sx={(theme) => ({ color: theme.colorScheme === 'dark' ? "white" : "black" })} order={3}>Edit {artist.name}</Title>
+                </Card.Section>
+            </Card>
         </div>
     );
 }
