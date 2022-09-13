@@ -38,7 +38,7 @@ export default function ArtistPage({ artist }) {
                                         <Text><b>{`${e.title} ${e.altTitle&&`(${e.altTitle})`}`}</b></Text>
                                         <Group spacing={0}>
                                         {e.artists.map((a: any, index: any)=>
-                                            <Link passHref href={`/artists/${a.id}`}>
+                                            <Link key={a.id} passHref href={`/artists/${a.id}`}>
                                                 <Text sx={{
                                                     ":hover": {
                                                         textDecoration: 'underline'
@@ -64,7 +64,7 @@ export default function ArtistPage({ artist }) {
                 </Group>
                 <Grid pt={'md'} columns={20}>
                     {artist.albums.map((e: Album) => {
-                        return<Grid.Col span={10} lg={5} xl={20/6} sm={20/3}>
+                        return<Grid.Col key={e.id} span={10} lg={5} xl={20/6} sm={20/3}>
                             <Link passHref href={`/albums/${e.id}`}>
                                 <Card component="a">
                                     <Card.Section>

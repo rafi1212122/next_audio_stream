@@ -26,7 +26,7 @@ export default function ArtistPage({ album }) {
                         <Group spacing={'xs'} style={{ color:'white', textShadow: "0 0 0.25rem rgb(0 0 0 / 40%)", fontWeight: 'normal' }}>
                             <Group spacing={0}>
                                 {album.artists.map((artist: Artist, index: any)=>{
-                                return<Link passHref href={`/artists/${artist.id}`}>
+                                return<Link key={artist.id} passHref href={`/artists/${artist.id}`}>
                                     <Text component="a" sx={{
                                         ":hover": {
                                             textDecoration: 'underline'
@@ -58,7 +58,7 @@ export default function ArtistPage({ album }) {
                                         <Text><b>{`${e.title} ${e.altTitle&&`(${e.altTitle})`}`}</b></Text>
                                         <Group spacing={0}>
                                         {e.artists.map((a: any, index: any)=>
-                                            <Link passHref href={`/artists/${a.id}`}>
+                                            <Link key={a.id} passHref href={`/artists/${a.id}`}>
                                                 <Text sx={{
                                                     ":hover": {
                                                         textDecoration: 'underline'
