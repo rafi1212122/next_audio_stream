@@ -1,5 +1,5 @@
 import { AppShell, Navbar, Header, Group, ActionIcon, Stack, Anchor, Text, Slider, Footer, Menu, NavLink, Image, AspectRatio } from '@mantine/core';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import DataContext from '../helpers/DataContext';
 import { useDocumentVisibility, useMediaQuery, useTimeout } from '@mantine/hooks';
 import useHover from '../helpers/useHover';
@@ -71,7 +71,7 @@ export default function Layout({ children }){
         }
         setPlayerState(playerState=>({ ...playerState, progress: playerRef.current.currentTime?Math.ceil(playerRef.current.currentTime):0 }))
     }
-
+    
     const handleEnd = () => {
         if(playerState.isLooping){
             setPlayerState(playerState=>({...playerState, isPlaying: true}))

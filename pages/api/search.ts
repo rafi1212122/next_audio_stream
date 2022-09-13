@@ -38,9 +38,59 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
                         take: 1
                     }
                 },
-                take: 7,
+                take: 5,
             })
-            return res.json({ artists })
+
+            const musics = await prisma.music.findMany({
+                where: {
+                    OR: [
+                        {
+                            title: {
+                                contains: req.query.q,
+                                mode: 'insensitive'
+                            },
+                        },
+                        {
+                            altTitle: {
+                                contains: req.query.q,
+                                mode: 'insensitive'
+                            }
+                        },
+                        {
+                            artists: {
+                                some: {
+                                    OR: [
+                                        {
+                                            name: {
+                                                contains: req.query.q,
+                                                mode: 'insensitive'
+                                            },
+                                        },
+                                        {
+                                            altName: {
+                                                contains: req.query.q,
+                                                mode: 'insensitive'
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                include: {
+                    album: {
+                        select: {
+                            id: true,
+                            albumArt: true,
+                        }
+                    },
+                    artists: true
+                },
+                take: 5,
+            })
+
+            return res.json(JSON.parse(JSON.stringify({ artists, musics }, (key, value) => (typeof value === 'bigint' ? value.toString() : value))))
         default:
             return res.status(405).json({ message: req.method+' method is not allowed!' })
     }
