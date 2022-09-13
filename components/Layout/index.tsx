@@ -1,7 +1,7 @@
 import { AppShell, Navbar, Group, ActionIcon, Stack, Anchor, Text, Slider, Footer, Header } from '@mantine/core';
 import { Suspense, useContext, useEffect, useRef, useState } from 'react';
 import DataContext from '../../helpers/DataContext';
-import { useDocumentVisibility, useMediaQuery, useTimeout } from '@mantine/hooks';
+import { useDocumentVisibility, useTimeout } from '@mantine/hooks';
 import useHover from '../../helpers/useHover';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -19,10 +19,9 @@ export default function Layout({ children }){
     const [manageLink, setManageLink] = useState(false)
     const [volumeRef, isVolumeHovered] = useHover()
     const [progressRef, isProgressHovered] = useHover()
-    const {playerState, setPlayerState, queue, setQueue, profile, themeOverride, setThemeOverride} = useContext(DataContext)
+    const {playerState, setPlayerState, queue, setQueue} = useContext(DataContext)
     const playerRef = useRef<HTMLVideoElement>(null)
     const router = useRouter()
-    const smallScreen = useMediaQuery('(max-width: 630px)');
     const documentState = useDocumentVisibility()
     const { start, clear } = useTimeout(() => {
         setPlayerState(playerState=>({...playerState, isSeeking: false}))
@@ -89,8 +88,39 @@ export default function Layout({ children }){
         }
     }
 
+    useEffect(()=> {
+        if (queue.length>0&&'mediaSession' in navigator) {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: queue[0]&&`${queue[0]?.title} ${queue[0]?.altTitle&&`(${queue[0]?.altTitle})`}`,
+                artist: queue[0]?.artists?.map((a: any, index: any)=>`${index<queue[0]?.artists?.length&&index!==0?", ":""}${a.name}`),
+                album: queue[0]?.albumName,
+                artwork: [
+                    { src: queue[0]?.poster+'&w=128', sizes: '128x128', type: 'image/webp' },
+                    { src: queue[0]?.poster+'&w=256', sizes: '256x256', type: 'image/webp' },
+                    { src: queue[0]?.poster, sizes: '512x512', type: 'image/webp' },
+                ],
+            });
+            navigator.mediaSession.setActionHandler('nexttrack', handleNext);
+            navigator.mediaSession.setActionHandler("seekforward", handleMediaSessionSeek);
+            navigator.mediaSession.setActionHandler("seekbackward", handleMediaSessionSeek);
+        }
+    }, [queue])
+
     const handleNext = () => {
         setQueue(queue.slice(1))
+    }
+
+    const handleMediaSessionSeek = async (details: MediaSessionActionDetails) => {
+        await setPlayerState(playerState=>({...playerState, isSeeking: true}))
+        switch(details.action){
+            case "seekforward":
+                playerRef.current.currentTime = Math.min(playerRef.current.currentTime+10, playerState.max)
+                break
+            case "seekbackward":
+                playerRef.current.currentTime = Math.max(playerRef.current.currentTime-10, 0)
+                break
+        }
+        setPlayerState(playerState=>({...playerState, isSeeking: false}))
     }
 
     return(
@@ -191,11 +221,11 @@ export default function Layout({ children }){
                     </Group>
                 </Footer>
             }
-            navbar={!smallScreen&&<Suspense fallback={<Navbar
+            navbar={<Suspense fallback={<Navbar
                 styles={(theme) => ({
                     root: { backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[9] : theme.colors.gray[0] },
                 })} width={{ base: 250 }} height={'calc(100vh - 150px)'}>
-                </Navbar>}><DynamicNavbar/></Suspense>
+                </Navbar>}><DynamicNavbar manageLink={manageLink} setManageLink={setManageLink}/></Suspense>
             }
             styles={(theme) => ({
                 root: { backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[2] },

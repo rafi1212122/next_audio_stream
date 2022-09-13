@@ -1,13 +1,16 @@
 import { AspectRatio, Navbar as MantineNavbar, NavLink, Stack } from "@mantine/core"
+import { useMediaQuery } from "@mantine/hooks"
 import Link from "next/link"
 import { useRouter } from "next/router"
 import { useContext, useState } from "react"
 import DataContext from "../../helpers/DataContext"
 
-export default function Navbar() {
+export default function Navbar({ manageLink, setManageLink }) {
     const { profile, queue } = useContext(DataContext)
-    const [manageLink, setManageLink] = useState(false)
     const router = useRouter()
+    const smallScreen = useMediaQuery('(max-width: 630px)');
+
+    if(smallScreen)return<></>
 
     return(
         <MantineNavbar

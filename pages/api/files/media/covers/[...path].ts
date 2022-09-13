@@ -22,7 +22,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
     let processedImage: any
     if(file?.ContentType.includes('image')&&(req.query.w||req.query.q)){
         const originalWidth = (await sharp(file?.Body).metadata()).width
-        processedImage = await sharp(file?.Body).resize(originalWidth<=parseInt(String(req.query.w))?originalWidth:parseInt(String(req.query.w))||originalWidth).webp({ quality: parseInt(String(req.query.q||100))>100?100:parseInt(String(req.query.q||100)) }).toBuffer()
+        processedImage = await sharp(file?.Body).resize(originalWidth<=parseInt(String(req.query.w))?originalWidth:parseInt(Array.isArray(req.query.w)?req.query.w.pop():req.query.w)||originalWidth).webp({ quality: parseInt(String(req.query.q||100))>100?100:parseInt(String(req.query.q||100)) }).toBuffer()
     }
 
     if(processedImage){
