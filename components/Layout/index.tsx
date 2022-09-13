@@ -114,7 +114,7 @@ export default function Layout({ children }){
         await setPlayerState(playerState=>({...playerState, isSeeking: true}))
         switch(details.action){
             case "seekforward":
-                playerRef.current.currentTime = Math.min(playerRef.current.currentTime+10, playerState.max)
+                playerRef.current.currentTime = Math.min(playerRef.current.currentTime+10, playerRef.current.duration)
                 break
             case "seekbackward":
                 playerRef.current.currentTime = Math.max(playerRef.current.currentTime-10, 0)

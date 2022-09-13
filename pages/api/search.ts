@@ -44,6 +44,16 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
                                     ]
                                 }
                             }
+                        },
+                        {
+                            albums: {
+                                some: {
+                                    name: {
+                                        contains: req.query.q,
+                                        mode: 'insensitive'
+                                    }
+                                }
+                            }
                         }
                     ]
                 },
@@ -102,6 +112,14 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
                                     ]
                                 }
                             }
+                        },
+                        {
+                            album: {
+                                name: {
+                                    contains: req.query.q,
+                                    mode: 'insensitive'
+                                },
+                            }
                         }
                     ],
                     approved: true
@@ -115,10 +133,25 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
                     },
                     artists: true
                 },
-                take: 5,
+                take: 6,
             })
 
-            return res.json(JSON.parse(JSON.stringify({ artists, musics }, (key, value) => (typeof value === 'bigint' ? value.toString() : value))))
+            const albums = await prisma.album.findMany({
+                where: {
+                    OR: [
+                        {
+                            name: {
+                                contains: req.query.q,
+                                mode: 'insensitive'
+                            },
+                        },
+                    ],
+                    approved: true
+                },
+                take: 6,
+            })
+
+            return res.json(JSON.parse(JSON.stringify({ artists, musics, albums }, (key, value) => (typeof value === 'bigint' ? value.toString() : value))))
         default:
             return res.status(405).json({ message: req.method+' method is not allowed!' })
     }

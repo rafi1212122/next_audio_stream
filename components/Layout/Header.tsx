@@ -6,7 +6,7 @@ import DataContext from "../../helpers/DataContext"
 export default function Header() {
     const { profile, setThemeOverride } = useContext(DataContext)
 
-    return<MantineHeader px={'xl'} style={{ zIndex:1000, display: 'flex', justifyContent: 'flex-end', 'alignItems': 'center' }} styles={(theme) => ({
+    return<MantineHeader px={'md'} style={{ zIndex:1000, display: 'flex', justifyContent: 'flex-end', 'alignItems': 'center' }} styles={(theme) => ({
         root: { backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[9] : theme.colors.gray[0] },
     })} height={60}>
         <Menu position='bottom-end' shadow="md" width={200}>
