@@ -71,7 +71,7 @@ export default function Layout({ children }){
         }
         setPlayerState(playerState=>({ ...playerState, progress: playerRef.current.currentTime?Math.ceil(playerRef.current.currentTime):0 }))
     }
-    
+
     const handleEnd = () => {
         if(playerState.isLooping){
             setPlayerState(playerState=>({...playerState, isPlaying: true}))
@@ -128,8 +128,9 @@ export default function Layout({ children }){
                             <Link passHref href={`/albums/${queue[0]?.albumId}`}>
                                 <Text component='a' sx={{ ':hover': { textDecoration: 'underline' }, cursor: 'pointer' }} size='lg'><b>{queue[0]&&`${queue[0]?.title} ${queue[0]?.altTitle&&`(${queue[0]?.altTitle})`}`}</b></Text>
                             </Link>
-                            {queue[0]?.artists?.map((a: any)=>
-                                <Link passHref href={`/artists/${a.id}`}>
+                            <Group spacing={0}>
+                            {queue[0]?.artists?.map((a: any, index: any)=>
+                                <Link key={a.id} passHref href={`/artists/${a.id}`}>
                                     <Anchor sx={(theme)=>({
                                         color: theme.colorScheme==='dark' ? theme.colors.gray[5] : theme.colors.gray[7],
                                         '&:hover':{
@@ -137,10 +138,11 @@ export default function Layout({ children }){
                                             fontWeight: 500
                                         }
                                     })} component='a'>
-                                        {a.name}
+                                        {index<queue[0]?.artists?.length&&index!==0?", ":""}{a.name}
                                     </Anchor>
                                 </Link>
                             )}
+                            </Group>
                         </Stack>
                         <Stack style={{ flex: 1.3 }} align={'center'} justify={'center'} spacing={1}>
                             <Group spacing={0}>
