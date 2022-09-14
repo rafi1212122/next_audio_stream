@@ -34,6 +34,7 @@ export default function Explore() {
             <Table highlightOnHover>
                 <thead>
                     <tr>
+                        <th>ID</th>
                         <th>Name</th>
                         <th>Alternative Name</th>
                         <th>Actions</th>
@@ -43,6 +44,7 @@ export default function Explore() {
                     {artists.map((i: Artist)=> {
                         return(
                             <tr key={i.id}>
+                                <td>{i.id}</td>
                                 <td>{i.name}</td>
                                 <td>{i.altName}</td>
                                 <td>

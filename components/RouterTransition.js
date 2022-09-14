@@ -5,16 +5,26 @@ import {
   NavigationProgress,
   stopNavigationProgress
 } from '@mantine/nprogress';
+import { useContext } from 'react';
+import DataContext from '../helpers/DataContext';
 
 export function RouterTransition() {
-    Router.onRouteChangeStart = () => {
-        setNavigationProgress(0)
-        startNavigationProgress()
-    }
-    Router.onRouteChangeComplete = () => setNavigationProgress(100)
-    Router.onRouteChangeError = () => setNavigationProgress(100)
+  const { setIsNavigating } = useContext(DataContext)
+  Router.onRouteChangeStart = () => {
+    setIsNavigating(true)
+    setNavigationProgress(0)
+    startNavigationProgress()
+  }
+  Router.onRouteChangeComplete = () => {
+    setIsNavigating(false)
+    setNavigationProgress(100)
+  }
+  Router.onRouteChangeError = () => {
+    setIsNavigating(false)
+    setNavigationProgress(100)
+  }
 
-    return<NavigationProgress withinPortal={false} onFinish={()=>{
-            stopNavigationProgress()
-        }}/>;
+  return<NavigationProgress withinPortal={false} onFinish={()=>{
+    stopNavigationProgress()
+  }}/>;
 }

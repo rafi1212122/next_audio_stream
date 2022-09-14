@@ -1,7 +1,7 @@
 import { AppShell, Navbar, Group, ActionIcon, Stack, Anchor, Text, Slider, Footer, Header } from '@mantine/core';
 import { Suspense, useContext, useEffect, useRef, useState } from 'react';
 import DataContext from '../../helpers/DataContext';
-import { useDocumentVisibility, useTimeout } from '@mantine/hooks';
+import { useDocumentVisibility, useMediaQuery, useTimeout } from '@mantine/hooks';
 import useHover from '../../helpers/useHover';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -17,12 +17,14 @@ const DynamicNavbar = dynamic(() => import('./Navbar'), {
 
 export default function Layout({ children }){
     const [manageLink, setManageLink] = useState(false)
+    const [playerProgress, setPlayerProgress] = useState(0)
     const [volumeRef, isVolumeHovered] = useHover()
     const [progressRef, isProgressHovered] = useHover()
     const {playerState, setPlayerState, queue, setQueue} = useContext(DataContext)
     const playerRef = useRef<HTMLVideoElement>(null)
     const router = useRouter()
     const documentState = useDocumentVisibility()
+    const smallScreen = useMediaQuery('(max-width: 630px)');
     const { start, clear } = useTimeout(() => {
         setPlayerState(playerState=>({...playerState, isSeeking: false}))
     }, 2000);
@@ -64,7 +66,7 @@ export default function Layout({ children }){
     const handleSliderChange = (e: number) => {
         clear()
         setPlayerState(playerState=>({...playerState, isSeeking: true}))
-        setPlayerState(playerState=>({...playerState, progress: e}))
+        setPlayerProgress(e)
         start()
     }
 
@@ -77,7 +79,7 @@ export default function Layout({ children }){
         if(documentState==='hidden'||playerState.isSeeking){
             return
         }
-        setPlayerState(playerState=>({ ...playerState, progress: playerRef.current.currentTime?Math.ceil(playerRef.current.currentTime):0 }))
+        setPlayerProgress(playerRef.current.currentTime?Math.ceil(playerRef.current.currentTime):0)
     }
 
     const handleEnd = () => {
@@ -127,7 +129,7 @@ export default function Layout({ children }){
         <AppShell
             header={<Suspense fallback={<Header px={'xl'} styles={(theme) => ({
                 root: { backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[9] : theme.colors.gray[0] } })} height={60}><></></Header>}>
-                <DynamicHeader/>
+                <DynamicHeader smallScreen={smallScreen}/>
               </Suspense>
             }
             footer={
@@ -136,27 +138,30 @@ export default function Layout({ children }){
                 })} height={90}>
                     <video onEnded={handleEnd} onDurationChange={()=>setPlayerState(playerState=>({...playerState, max: playerRef.current.duration}))} onTimeUpdate={handleTimeUpdate} onPause={()=>setPlayerState(playerState=>({...playerState, isPlaying: false}))} onPlay={()=>setPlayerState(playerState=>({...playerState, isPlaying: true}))} ref={playerRef} controls style={{ display: 'none' }} src={queue[0]?.url||''} poster={queue[0]?.poster||''} autoPlay></video>
                     <Group style={{ height:'100%', justifyContent: 'flex-start' }} px={'0.5rem'}>
-                        <Stack style={{ flex: 1 }} spacing={0} justify={'space-around'}>
-                            <Link passHref href={`/albums/${queue[0]?.albumId}`}>
-                                <Text component='a' sx={{ ':hover': { textDecoration: 'underline' }, cursor: 'pointer' }} size='lg'><b>{queue[0]&&`${queue[0]?.title} ${queue[0]?.altTitle&&`(${queue[0]?.altTitle})`}`}</b></Text>
-                            </Link>
-                            <Group spacing={0}>
-                            {queue[0]?.artists?.map((a: any, index: any)=>
-                                <Link key={a.id} passHref href={`/artists/${a.id}`}>
-                                    <Anchor sx={(theme)=>({
-                                        color: theme.colorScheme==='dark' ? theme.colors.gray[5] : theme.colors.gray[7],
-                                        '&:hover':{
-                                            color: theme.colorScheme==='dark' ? theme.colors.gray[2] : 'black',
-                                            fontWeight: 500
-                                        }
-                                    })} component='a'>
-                                        {index<queue[0]?.artists?.length&&index!==0?", ":""}{a.name}
-                                    </Anchor>
+                        <Group style={{ flex: smallScreen?2:1 }}>
+                            {smallScreen&&<img style={{ objectFit: 'contain', backdropFilter: 'blur(0.5rem) brightness(0.5)', width: 'calc(90px - 1.5rem)', height: 'calc(90px - 1.5rem)', borderRadius: '0.2rem' }} src={queue[0]?.poster||'data:image/jpeg;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}/>}
+                            <Stack style={{ maxWidth: smallScreen?'calc(66vw - calc(90px + 1rem))':'initial' }} spacing={0} justify={'space-around'}>
+                                <Link passHref href={`/albums/${queue[0]?.albumId}`}>
+                                    <Text component='a' sx={{ ':hover': { textDecoration: 'underline' }, cursor: 'pointer' }} size='lg'><b>{queue[0]&&`${queue[0]?.title} ${(queue[0]?.altTitle&&!smallScreen)?`(${queue[0]?.altTitle})`:""}`}</b></Text>
                                 </Link>
-                            )}
-                            </Group>
-                        </Stack>
-                        <Stack style={{ flex: 1.3 }} align={'center'} justify={'center'} spacing={1}>
+                                <Group spacing={0}>
+                                {queue[0]?.artists?.map((a: any, index: any)=>
+                                    <Link key={a.id} passHref href={`/artists/${a.id}`}>
+                                        <Anchor sx={(theme)=>({
+                                            color: theme.colorScheme==='dark' ? theme.colors.gray[5] : theme.colors.gray[7],
+                                            '&:hover':{
+                                                color: theme.colorScheme==='dark' ? theme.colors.gray[2] : 'black',
+                                                fontWeight: 500
+                                            }
+                                        })} component='a'>
+                                            {index<queue[0]?.artists?.length&&index!==0?", ":""}{a.name}
+                                        </Anchor>
+                                    </Link>
+                                )}
+                                </Group>
+                            </Stack>
+                        </Group>
+                        <Stack style={{ flex: 1.3, display: smallScreen?'none':'flex' }} align={'center'} justify={'center'} spacing={1}>
                             <Group spacing={0}>
                                 <ActionIcon style={{ height:20, width:20, opacity: playerState.isLooping?1:0.5 }} onClick={()=>setPlayerState(playerState=>({...playerState, isLooping: !playerState.isLooping}))}>
                                     <svg style={{ height:20, width:20 }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -182,7 +187,7 @@ export default function Layout({ children }){
                             <div ref={progressRef}>
                                 <Group spacing={10}>
                                     <Text style={{ cursor:'default' }} size="sm">
-                                        {new Date(playerState.progress * 1000||0).toISOString().substring(14, 19)}
+                                        {new Date(playerProgress * 1000||0).toISOString().substring(14, 19)}
                                     </Text>
                                     <Slider styles={{
                                         thumb: {
@@ -195,7 +200,7 @@ export default function Layout({ children }){
                                                 left: 0,
                                             },
                                         },
-                                    }} size={'sm'} style={{ width: '25vw' }} disabled={queue.length<1} onChangeEnd={handleSliderChangeEnd} onChange={handleSliderChange} label={null} max={playerState.max} value={playerState.progress}/>
+                                    }} size={'sm'} style={{ width: '25vw' }} disabled={queue.length<1} onChangeEnd={handleSliderChangeEnd} onChange={handleSliderChange} label={null} max={playerState.max} value={playerProgress}/>
                                     <Text style={{ cursor:'default' }} size="sm">
                                         {queue.length<1?new Date(0).toISOString().substring(14, 19):new Date(playerState.max * 1000||0).toISOString().substring(14, 19)}
                                     </Text>
@@ -216,7 +221,7 @@ export default function Layout({ children }){
                             <Slider styles={{
                                 thumb: { backgroundColor: 'white', opacity: isVolumeHovered?1:0 },
                                 track: { margin: 0, '&:before': { right: 0, left: 0 } }
-                            }} labelTransition={'pop'} labelTransitionDuration={150} disabled={playerState.isMuted} min={0} size={'sm'} max={100} style={{ width:'7vw' }} value={playerState.volume} onChange={(val)=>setPlayerState(playerState=>({...playerState, volume:val}))}/>
+                            }} labelTransition={'pop'} labelTransitionDuration={150} disabled={playerState.isMuted} min={0} size={'sm'} max={100} style={{ width: smallScreen?'20vw':'7vw' }} value={playerState.volume} onChange={(val)=>setPlayerState(playerState=>({...playerState, volume:val}))}/>
                         </Group>
                     </Group>
                 </Footer>

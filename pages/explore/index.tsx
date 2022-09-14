@@ -42,7 +42,7 @@ export default function Explore() {
                         <Link passHref href={`/albums/${i.album.id}`}>
                             <Card component="a" shadow="sm" p="sm" radius="md" withBorder>
                                 <Stack spacing={0} style={{ alignItems: 'flex-start' }}>
-                                    <Image height={'7rem'} width={'7rem'} radius={'sm'} src={`/api/files/${i.album.albumArt}?q=75&w=512`}/>
+                                    <Image height={'7rem'} width={'7rem'} radius={'sm'} src={`/api/files/${i.album.albumArt}?q=75&w=256`}/>
                                     <Stack spacing={0} pt={'sm'}>
                                         <Text weight={500}>{`${i.title} ${i.altTitle&&`(${i.altTitle})`}`}</Text>
                                         <Text size="sm" color="dimmed">{i.artists.map((artist: any, index: any)=>`${index<i.artists.length&&index!==0?", ":""}${`${artist.name} ${`${artist.altName&&`(${artist.altName})`}`}`}`)}</Text>
@@ -63,7 +63,7 @@ export default function Explore() {
                         <Link passHref href={`/artists/${i.id}`}>
                             <Card component="a" shadow="sm" p="sm" radius="md" withBorder>
                                 <Group style={{ alignItems: 'flex-start' }}>
-                                    <Image height={'7rem'} width={'7rem'} radius={'sm'} src={`${i.albums.length>0?`/api/files/${i.albums[0].albumArt}?q=75&w=512`:"https://dummyimage.com/512x512/555/555"}`}/>
+                                    <Image height={'7rem'} width={'7rem'} radius={'sm'} src={`${i.albums.length>0?`/api/files/${i.albums[0].albumArt}?q=75&w=256`:"https://dummyimage.com/256x256/555/555"}`}/>
                                     <Stack spacing={0} pt={'sm'}>
                                         <Text weight={500}>{i.name}</Text>
                                         <Text size="sm" color="dimmed">{i.altName}</Text>

@@ -52,7 +52,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
                                         contains: req.query.q,
                                         mode: 'insensitive'
                                     }
-                                }
+                                },
                             }
                         }
                     ]
@@ -61,6 +61,9 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
                     albums: {
                         select: {
                             albumArt: true
+                        },
+                        where: {
+                            approved: true
                         },
                         orderBy: {
                             releaseDate: 'desc'

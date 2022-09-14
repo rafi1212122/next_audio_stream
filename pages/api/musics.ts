@@ -45,6 +45,16 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
                             }
                         })
                     },
+                },
+                select: {
+                    id: true,
+                    title: true,
+                    altTitle: true,
+                    userId: true,
+                    albumId: true,
+                    approved: true,
+                    albumIndex: true,
+                    artists: true,
                 }
             })
 
@@ -60,7 +70,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
 export const config = {
     api: {
         bodyParser: {
-            sizeLimit: '200MB'
+            sizeLimit: '80MB'
         }
     }
 }

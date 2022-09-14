@@ -95,6 +95,9 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
                 take: 10,
                 orderBy: {
                     releaseDate: 'desc'
+                },
+                where: {
+                    approved: true
                 }
             },
             musics: {

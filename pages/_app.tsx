@@ -1,7 +1,6 @@
 import { MantineProvider } from '@mantine/core'
-import { useColorScheme, useDidUpdate } from '@mantine/hooks'
-import { useEffect, useState } from 'react'
-import { useHotkeys } from '@mantine/hooks';
+import { useColorScheme, useDidUpdate, useMediaQuery, useHotkeys } from '@mantine/hooks'
+import { Suspense, useEffect, useState } from 'react'
 import Layout from '../components/Layout'
 import DataContext from '../helpers/DataContext'
 import '../styles/globals.css'
@@ -9,22 +8,27 @@ import { RouterTransition } from '../components/RouterTransition';
 import { NotificationsProvider } from '@mantine/notifications';
 import { useRouter } from 'next/router';
 import axios, { AxiosResponse } from 'axios';
+import dynamic from 'next/dynamic';
 
 function MyApp({ Component, pageProps }) {
   const router =  useRouter()
   const colorScheme = useColorScheme()
+  const [mobileDrawerState, setMobileDrawerState] = useState(false)
+  const [isNavigating, setIsNavigating] = useState(false)
   const [profile, setProfile] = useState({})
   const [queue, setQueue] = useState([])
   const [themeOverride, setThemeOverride] = useState<0|1|2>(0)
   const [playerState, setPlayerState] = useState({
       isPlaying: false,
-      progress: 0,
       max: 0,
       isSeeking: false,
       isLooping: false,
       isMuted: false,
       volume: 50
   })
+  const smallScreen = useMediaQuery('(max-width: 630px)');
+
+  const DynamicNavbar = dynamic(() => import('../components/Layout/Drawer'))
   
   useEffect(()=> {
     if(localStorage.getItem('theme_override')){
@@ -58,13 +62,14 @@ function MyApp({ Component, pageProps }) {
 
   return(
     <MantineProvider theme={{ colorScheme: themeOverride?`${themeOverride>1?'dark':'light'}`:colorScheme }} withNormalizeCSS withGlobalStyles>
-      <DataContext.Provider value={{ playerState, setPlayerState, queue, setQueue, profile, themeOverride, setThemeOverride }}>
+      <DataContext.Provider value={{ playerState, setPlayerState, queue, setQueue, profile, themeOverride, setThemeOverride, setMobileDrawerState, setIsNavigating }}>
         <RouterTransition/>
         <Layout>
           <NotificationsProvider autoClose={3000} zIndex={10000} position={'top-right'}>
             <Component {...pageProps} />
           </NotificationsProvider>
         </Layout>
+        <DynamicNavbar mobileDrawerState={mobileDrawerState} setMobileDrawerState={setMobileDrawerState}/>
       </DataContext.Provider>
     </MantineProvider>
   )
