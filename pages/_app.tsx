@@ -14,7 +14,6 @@ function MyApp({ Component, pageProps }) {
   const router =  useRouter()
   const colorScheme = useColorScheme()
   const [mobileDrawerState, setMobileDrawerState] = useState(false)
-  const [isNavigating, setIsNavigating] = useState(false)
   const [profile, setProfile] = useState({})
   const [queue, setQueue] = useState([])
   const [themeOverride, setThemeOverride] = useState<0|1|2>(0)
@@ -62,14 +61,14 @@ function MyApp({ Component, pageProps }) {
 
   return(
     <MantineProvider theme={{ colorScheme: themeOverride?`${themeOverride>1?'dark':'light'}`:colorScheme }} withNormalizeCSS withGlobalStyles>
-      <DataContext.Provider value={{ playerState, setPlayerState, queue, setQueue, profile, themeOverride, setThemeOverride, setMobileDrawerState, setIsNavigating }}>
+      <DataContext.Provider value={{ playerState, setPlayerState, queue, setQueue, profile, themeOverride, setThemeOverride, setMobileDrawerState }}>
         <RouterTransition/>
         <Layout>
           <NotificationsProvider autoClose={3000} zIndex={10000} position={'top-right'}>
             <Component {...pageProps} />
           </NotificationsProvider>
         </Layout>
-        <DynamicNavbar mobileDrawerState={mobileDrawerState} setMobileDrawerState={setMobileDrawerState}/>
+        <DynamicNavbar mobileDrawerState={mobileDrawerState} smallScreen={smallScreen} setMobileDrawerState={setMobileDrawerState}/>
       </DataContext.Provider>
     </MantineProvider>
   )

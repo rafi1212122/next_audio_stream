@@ -4,9 +4,11 @@ import { useRouter } from "next/router"
 import { useContext } from "react"
 import DataContext from "../../helpers/DataContext"
 
-export default function Drawer({ mobileDrawerState, setMobileDrawerState }) {
+export default function Drawer({ mobileDrawerState, setMobileDrawerState, smallScreen }) {
     const router = useRouter()
     const { profile } = useContext(DataContext)
+
+    if(!smallScreen)return<></>
 
     const navigate = async (e, url: string) => {
         e.preventDefault()

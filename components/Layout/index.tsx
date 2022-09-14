@@ -1,4 +1,4 @@
-import { AppShell, Navbar, Group, ActionIcon, Stack, Anchor, Text, Slider, Footer, Header } from '@mantine/core';
+import { AppShell, Navbar, Group, ActionIcon, Stack, Anchor, Text, Slider, Footer, Header, Popover } from '@mantine/core';
 import { Suspense, useContext, useEffect, useRef, useState } from 'react';
 import DataContext from '../../helpers/DataContext';
 import { useDocumentVisibility, useMediaQuery, useTimeout } from '@mantine/hooks';
@@ -208,6 +208,19 @@ export default function Layout({ children }){
                             </div>
                         </Stack>
                         <Group style={{ flex: 1, justifyContent: 'end' }} ref={volumeRef} spacing={10}>
+                            {smallScreen?
+                            <Popover width={'target'} position="top" shadow="sm">
+                                <Popover.Target>
+                                    <ActionIcon style={{ height:20, width:20 }}>
+                                    <svg style={{ height:20, width:20 }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clipRule="evenodd" />
+                                    </svg>
+                                    </ActionIcon>
+                                </Popover.Target>
+                                <Popover.Dropdown>
+                                    <input min={0} max={100} onChange={(e)=>setPlayerState(playerState=>({...playerState, volume:e.target.value}))} value={playerState.volume} type="range" style={{ WebkitAppearance: 'slider-vertical', width:'3px' }} />
+                                </Popover.Dropdown>
+                            </Popover>:<>
                             <ActionIcon style={{ height:20, width:20 }} onClick={()=>setPlayerState(playerState=>({...playerState, isMuted:!playerState.isMuted}))}>
                                 {playerState.isMuted?
                                 <svg style={{ height:20, width:20 }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -221,7 +234,8 @@ export default function Layout({ children }){
                             <Slider styles={{
                                 thumb: { backgroundColor: 'white', opacity: isVolumeHovered?1:0 },
                                 track: { margin: 0, '&:before': { right: 0, left: 0 } }
-                            }} labelTransition={'pop'} labelTransitionDuration={150} disabled={playerState.isMuted} min={0} size={'sm'} max={100} style={{ width: smallScreen?'20vw':'7vw' }} value={playerState.volume} onChange={(val)=>setPlayerState(playerState=>({...playerState, volume:val}))}/>
+                            }} labelTransition={'pop'} labelTransitionDuration={150} disabled={playerState.isMuted} min={0} size={'sm'} max={100} style={{ width: '7vw' }} value={playerState.volume} onChange={(val)=>setPlayerState(playerState=>({...playerState, volume:val}))}/>
+                            </>}
                         </Group>
                     </Group>
                 </Footer>
