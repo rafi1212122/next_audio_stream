@@ -1,11 +1,12 @@
 import { AppShell, Navbar, Group, ActionIcon, Stack, Anchor, Text, Slider, Footer, Header, Popover } from '@mantine/core';
 import { Suspense, useContext, useEffect, useRef, useState } from 'react';
 import DataContext from '../../helpers/DataContext';
-import { useDocumentVisibility, useMediaQuery, useTimeout } from '@mantine/hooks';
+import { useDocumentVisibility, useHotkeys, useMediaQuery, useTimeout } from '@mantine/hooks';
 import useHover from '../../helpers/useHover';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic'
+import QueueDrawer from './QueueDrawer';
 
 const DynamicHeader = dynamic(() => import('./Header'), {
   suspense: true
@@ -16,7 +17,7 @@ const DynamicNavbar = dynamic(() => import('./Navbar'), {
 })
 
 export default function Layout({ children }){
-    const [manageLink, setManageLink] = useState(false)
+    const [queueDrawerState, setQueueDrawerState] = useState(false)
     const [playerProgress, setPlayerProgress] = useState(0)
     const [volumeRef, isVolumeHovered] = useHover()
     const [progressRef, isProgressHovered] = useHover()
@@ -28,14 +29,6 @@ export default function Layout({ children }){
     const { start, clear } = useTimeout(() => {
         setPlayerState(playerState=>({...playerState, isSeeking: false}))
     }, 2000);
-
-    useEffect(()=>{
-        if(router.pathname.split('/')[1]==='manage'){
-            setManageLink(true)
-        }else{
-            setManageLink(false)
-        }
-    }, [router.asPath])
     
     useEffect(()=>{
         if(playerState.isPlaying){
@@ -92,6 +85,7 @@ export default function Layout({ children }){
 
     useEffect(()=> {
         if (queue.length>0&&'mediaSession' in navigator) {
+            console.log('media session compatible!')
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: queue[0]&&`${queue[0]?.title} ${queue[0]?.altTitle&&`(${queue[0]?.altTitle})`}`,
                 artist: queue[0]?.artists?.map((a: any, index: any)=>`${index<queue[0]?.artists?.length&&index!==0?", ":""}${a.name}`),
@@ -102,15 +96,20 @@ export default function Layout({ children }){
                     { src: queue[0]?.poster, sizes: '512x512', type: 'image/webp' },
                 ],
             });
-            navigator.mediaSession.setActionHandler('nexttrack', handleNext);
+            navigator.mediaSession.setActionHandler('nexttrack', () => handleNext());
             navigator.mediaSession.setActionHandler("seekforward", handleMediaSessionSeek);
             navigator.mediaSession.setActionHandler("seekbackward", handleMediaSessionSeek);
         }
     }, [queue])
 
-    const handleNext = () => {
-        setQueue(queue.slice(1))
+    const handleNext = (index?: number) => {
+        setQueue(queue.slice(index||1))
     }
+
+    useHotkeys([
+        ['ArrowLeft', ()=>handleMediaSessionSeek({ action: 'seekbackward' })],
+        ['ArrowRight', ()=>handleMediaSessionSeek({ action: 'seekforward' })]
+    ])
 
     const handleMediaSessionSeek = async (details: MediaSessionActionDetails) => {
         await setPlayerState(playerState=>({...playerState, isSeeking: true}))
@@ -178,7 +177,7 @@ export default function Layout({ children }){
                                     </svg>
                                     }
                                 </ActionIcon>
-                                <ActionIcon onClick={handleNext} style={{ height:24, width:24 }}>
+                                <ActionIcon onClick={()=>handleNext()} style={{ height:24, width:24 }}>
                                     <svg style={{ height:24, width:24 }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                         <path d="M4.555 5.168A1 1 0 003 6v8a1 1 0 001.555.832L10 11.202V14a1 1 0 001.555.832l6-4a1 1 0 000-1.664l-6-4A1 1 0 0010 6v2.798l-5.445-3.63z" />
                                     </svg>
@@ -236,6 +235,12 @@ export default function Layout({ children }){
                                 track: { margin: 0, '&:before': { right: 0, left: 0 } }
                             }} labelTransition={'pop'} labelTransitionDuration={150} disabled={playerState.isMuted} min={0} size={'sm'} max={100} style={{ width: '7vw' }} value={playerState.volume} onChange={(val)=>setPlayerState(playerState=>({...playerState, volume:val}))}/>
                             </>}
+                            <ActionIcon onClick={()=>setQueueDrawerState(true)} color={'blue'} variant="light" title='Queue' size={'lg'}>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width={20}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0l-3.75-3.75M17.25 21L21 17.25" />
+                                </svg>
+                            </ActionIcon>
+                            <QueueDrawer setPlayerState={setPlayerState} handleSliderChange={handleSliderChange} handleSliderChangeEnd={handleSliderChangeEnd} playerProgress={playerProgress} playerState={playerState} queue={queue} handleNext={handleNext} queueDrawerState={queueDrawerState} smallScreen={smallScreen} setQueueDrawerState={setQueueDrawerState}/>
                         </Group>
                     </Group>
                 </Footer>
@@ -244,7 +249,7 @@ export default function Layout({ children }){
                 styles={(theme) => ({
                     root: { backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[9] : theme.colors.gray[0] },
                 })} width={{ base: 250 }} height={'calc(100vh - 150px)'}>
-                </Navbar>}><DynamicNavbar manageLink={manageLink} setManageLink={setManageLink}/></Suspense>
+                </Navbar>}><DynamicNavbar/></Suspense>
             }
             styles={(theme) => ({
                 root: { backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[2] },

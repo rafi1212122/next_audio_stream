@@ -2,13 +2,22 @@ import { AspectRatio, Navbar as MantineNavbar, NavLink, Stack } from "@mantine/c
 import { useMediaQuery } from "@mantine/hooks"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import { useContext, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import DataContext from "../../helpers/DataContext"
 
-export default function Navbar({ manageLink, setManageLink }) {
+export default function Navbar() {
     const { profile, queue } = useContext(DataContext)
     const router = useRouter()
     const smallScreen = useMediaQuery('(max-width: 630px)');
+    const [manageLink, setManageLink] = useState(false)
+
+    useEffect(()=>{
+        if(router.pathname.split('/')[1]==='manage'){
+            setManageLink(true)
+        }else{
+            setManageLink(false)
+        }
+    }, [router.asPath])
 
     if(smallScreen)return<></>
 
@@ -47,7 +56,7 @@ export default function Navbar({ manageLink, setManageLink }) {
                 }
             </Stack>
             <AspectRatio style={{ backgroundImage:`url(${queue[0]?.poster||''})`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: '#000000' }} ratio={1 / 1}>
-                <img style={{ objectFit: 'contain', backdropFilter: 'blur(0.5rem) brightness(0.5)' }} src={queue[0]?.poster||'data:image/jpeg;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}/>
+                <img style={{ objectFit: 'contain', backdropFilter: 'blur(0.5rem) brightness(0.5)' }} src={queue[0]?.poster||'https://dummyimage.com/512x512/000/000'}/>
             </AspectRatio>
         </MantineNavbar>
     )
