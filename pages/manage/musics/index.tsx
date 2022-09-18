@@ -56,7 +56,7 @@ export default function ManageMusics() {
                             <tr key={i.id}>
                                 <td>{i.title}</td>
                                 <td>{i.altTitle}</td>
-                                <td>{i.artists.map((a:any)=>`${a.name}(${a.altName}) `)}</td>
+                                <td>{i.artists.map((a:any)=>`${a.name}${a.altName&&`(${a.altName})`} `)}</td>
                                 <td>
                                     {!i.approved&&<Link passHref href={`/manage/musics/${i.id}`}>
                                         <ActionIcon component="a" color={'blue'} variant="filled">

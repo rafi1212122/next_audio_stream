@@ -17,18 +17,26 @@ export default function ArtistPage({ artist }) {
             </Head>
             <div style={{ backgroundImage: `url(${artist.albums.length>0?`/api/files/${artist.albums[0].albumArt}?q=75&w=512`:"https://dummyimage.com/512x512/555/555"})`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundPosition: 'top', backgroundColor: '#000000' }}>
                 <div style={{ minHeight: '25vh', display: 'flex', backdropFilter: 'blur(0.3rem) brightness(0.7)' }}>
-                    <Stack m={'1rem'} style={{ alignSelf: 'flex-end' }} spacing={3}>
-                        <Title style={{ color:'white', textShadow: "0 0 0.25rem rgb(0 0 0 / 40%)" }} order={1}>{artist.name}</Title>
-                        <Title style={{ color:'white', textShadow: "0 0 0.25rem rgb(0 0 0 / 40%)", fontWeight: 'normal' }} order={4}>{artist.altName}</Title>
+                    <Stack style={{ justifyContent: 'space-between' }} m={'1rem'}>
+                        <Link href={`/artists/${artist.id}`} passHref>
+                            <ActionIcon component="a" variant={"filled"} sx={(theme)=>({
+                                backgroundColor: theme.colorScheme==='dark'?theme.colors.dark[9] : theme.colors.gray[0],
+                                color: theme.colorScheme==='light'?theme.colors.dark[9] : theme.colors.gray[0],
+                                ':hover': {
+                                    backgroundColor: theme.colorScheme==='dark'?theme.colors.dark[6] : theme.colors.gray[3]
+                                }
+                            })} size={'lg'}><svg width={22} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg></ActionIcon>
+                        </Link>
+                        <Stack style={{ alignSelf: 'flex-end' }} spacing={3}>
+                            <Title style={{ color:'white', textShadow: "0 0 0.25rem rgb(0 0 0 / 40%)" }} order={1}>{artist.name}</Title>
+                            <Title style={{ color:'white', textShadow: "0 0 0.25rem rgb(0 0 0 / 40%)", fontWeight: 'normal' }} order={4}>{artist.altName}</Title>
+                        </Stack>
                     </Stack>
                 </div>
             </div>
             <div style={{ margin: '1rem' }}>
                 <Group position="apart">
                     <Title sx={(theme) => ({ color: theme.colorScheme === 'dark' ? "white" : "black" })} order={3}>Songs</Title>
-                    <Link passHref href={`/artists/${artist.id}/songs`}>
-                        <ActionIcon component="a" color={'blue'}><svg xmlns="http://www.w3.org/2000/svg" width={'20px'} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg></ActionIcon>
-                    </Link>
                 </Group>
                 <Stack pt={'md'}>
                     <Card>
@@ -55,33 +63,6 @@ export default function ArtistPage({ artist }) {
                     })}
                     </Card>
                 </Stack>
-                <Group pt={'lg'} position="apart">
-                    <Title sx={(theme) => ({ color: theme.colorScheme === 'dark' ? "white" : "black" })} order={3}>Albums / Singles</Title>
-                    <Group spacing={3}>
-                        <Link passHref href={`/artists/${artist.id}/albums/new`}>
-                            <ActionIcon component="a" variant="light" color={'blue'}><svg xmlns="http://www.w3.org/2000/svg" width={'20px'} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg></ActionIcon>
-                        </Link>
-                        <ActionIcon color={'blue'}><svg xmlns="http://www.w3.org/2000/svg" width={'20px'} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg></ActionIcon>
-                    </Group>
-                </Group>
-                <Grid pt={'md'} columns={20}>
-                    {artist.albums.map((e: Album) => {
-                        return<Grid.Col key={e.id} span={10} lg={5} xl={20/6} sm={20/3}>
-                            <Link passHref href={`/albums/${e.id}`}>
-                                <Card component="a">
-                                    <Card.Section>
-                                        <AspectRatio style={{ backgroundImage:`url(/api/files/${e.albumArt}?q=75&w=512)`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: '#000000' }} ratio={1/1}>
-                                            <img style={{ objectFit: 'contain', backdropFilter: 'blur(0.5rem) brightness(0.5)' }} src={`/api/files/${e.albumArt}?q=75&w=512`}/>
-                                        </AspectRatio>
-                                    </Card.Section>
-                                    <Card.Section p={'sm'} pt={'xs'}>
-                                        <Text>{e.name}</Text>
-                                    </Card.Section>
-                                </Card>
-                            </Link>
-                        </Grid.Col>
-                    })}
-                </Grid>
             </div>
         </div>
     );
@@ -94,7 +75,10 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
         },
         include: {
             albums: {
-                take: 6,
+                take: 1,
+                select: {
+                    albumArt: true
+                },
                 orderBy: {
                     releaseDate: 'desc'
                 },
@@ -106,7 +90,6 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
                 where: {
                     approved: true
                 },
-                take: 5,
                 orderBy: {
                     streams: 'desc'
                 },

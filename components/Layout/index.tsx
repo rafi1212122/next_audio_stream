@@ -4,7 +4,6 @@ import DataContext from '../../helpers/DataContext';
 import { useDocumentVisibility, useHotkeys, useMediaQuery, useTimeout } from '@mantine/hooks';
 import useHover from '../../helpers/useHover';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic'
 import QueueDrawer from './QueueDrawer';
 
@@ -18,12 +17,12 @@ const DynamicNavbar = dynamic(() => import('./Navbar'), {
 
 export default function Layout({ children }){
     const [queueDrawerState, setQueueDrawerState] = useState(false)
+    const [volumeSliderFocused, setVolumeSliderFocused] = useState(false)
     const [playerProgress, setPlayerProgress] = useState(0)
     const [volumeRef, isVolumeHovered] = useHover()
     const [progressRef, isProgressHovered] = useHover()
     const {playerState, setPlayerState, queue, setQueue} = useContext(DataContext)
     const playerRef = useRef<HTMLVideoElement>(null)
-    const router = useRouter()
     const documentState = useDocumentVisibility()
     const smallScreen = useMediaQuery('(max-width: 630px)');
     const { start, clear } = useTimeout(() => {
@@ -112,6 +111,8 @@ export default function Layout({ children }){
     ])
 
     const handleMediaSessionSeek = async (details: MediaSessionActionDetails) => {
+        if(volumeSliderFocused)return
+        if(!queue[0])return
         await setPlayerState(playerState=>({...playerState, isSeeking: true}))
         switch(details.action){
             case "seekforward":
@@ -233,7 +234,7 @@ export default function Layout({ children }){
                             <Slider styles={{
                                 thumb: { backgroundColor: 'white', opacity: isVolumeHovered?1:0 },
                                 track: { margin: 0, '&:before': { right: 0, left: 0 } }
-                            }} labelTransition={'pop'} labelTransitionDuration={150} disabled={playerState.isMuted} min={0} size={'sm'} max={100} style={{ width: '7vw' }} value={playerState.volume} onChange={(val)=>setPlayerState(playerState=>({...playerState, volume:val}))}/>
+                            }} onFocus={()=>setVolumeSliderFocused(true)} onBlur={()=>setVolumeSliderFocused(false)} labelTransition={'pop'} labelTransitionDuration={150} disabled={playerState.isMuted} min={0} size={'sm'} max={100} style={{ width: '7vw' }} value={playerState.volume} onChange={(val)=>setPlayerState(playerState=>({...playerState, volume:val}))}/>
                             </>}
                             <ActionIcon onClick={()=>setQueueDrawerState(true)} color={'blue'} variant="light" title='Queue' size={'lg'}>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width={20}>
