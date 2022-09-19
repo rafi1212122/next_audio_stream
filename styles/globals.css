@@ -14,3 +14,19 @@ a {
 * {
   box-sizing: border-box;
 }
+
+@media (min-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 0.5vw;
+    background: rgba(16, 17, 19, 25%); 
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 0.5vw;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555; 
+  }
+}

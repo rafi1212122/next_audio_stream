@@ -84,7 +84,7 @@ export default function Layout({ children }){
 
     useEffect(()=> {
         if (queue.length>0&&'mediaSession' in navigator) {
-            console.log('media session compatible!')
+            console.log('media session works!')
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: queue[0]&&`${queue[0]?.title} ${queue[0]?.altTitle&&`(${queue[0]?.altTitle})`}`,
                 artist: queue[0]?.artists?.map((a: any, index: any)=>`${index<queue[0]?.artists?.length&&index!==0?", ":""}${a.name}`),

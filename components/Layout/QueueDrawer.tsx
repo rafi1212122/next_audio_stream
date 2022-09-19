@@ -36,7 +36,7 @@ export default function QueueDrawer({ queueDrawerState, setQueueDrawerState, sma
                             </Link>
                             <Group spacing={0}>
                             {queue[0]?.artists?.map((a: any, index: any)=>
-                                <Link href={`/artists/${a.id}`} passHref>
+                                <Link key={a.id} href={`/artists/${a.id}`} passHref>
                                     <Text sx={()=>({
                                         ':hover': {
                                             textDecoration: 'underline'
@@ -95,7 +95,7 @@ export default function QueueDrawer({ queueDrawerState, setQueueDrawerState, sma
         <Text mt={'md'} weight="bold">Up Next</Text>
         <Card mt={'0.5rem'}>
         {queue[1]&&queue.slice(1).map((el: any, index)=>{
-            return<Card.Section withBorder p={'sm'}>
+            return<Card.Section key={index} withBorder p={'sm'}>
             <Group spacing={'sm'} noWrap style={{ alignItems: 'center' }}>
                 <ActionIcon onClick={()=>handleNext(index+1)} color={'blue'}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width={20}><path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" /></svg></ActionIcon>
                 <Image height={'3.5rem'} width={'3.5rem'} radius={'sm'} src={el?.poster}/>
@@ -109,7 +109,7 @@ export default function QueueDrawer({ queueDrawerState, setQueueDrawerState, sma
                     </Link>
                     <Group spacing={0}>
                     {el?.artists?.map((a: any, index: any)=>
-                        <Link href={`/artists/${a.id}`} passHref>
+                        <Link href={`/artists/${a.id}`} key={a.id} passHref>
                             <Text sx={()=>({
                                 ':hover': {
                                     textDecoration: 'underline'

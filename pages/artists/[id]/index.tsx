@@ -1,5 +1,6 @@
 import { ActionIcon, AspectRatio, Card, Grid, Group, Image, Stack, Text, Title } from "@mantine/core"
 import { Album, Artist, Music } from "@prisma/client"
+import dayjs from "dayjs"
 import { GetServerSidePropsContext } from "next"
 import Head from "next/head"
 import Link from "next/link"
@@ -75,7 +76,8 @@ export default function ArtistPage({ artist }) {
                                         </AspectRatio>
                                     </Card.Section>
                                     <Card.Section p={'sm'} pt={'xs'}>
-                                        <Text>{e.name}</Text>
+                                        <Text><b>{e.name}</b></Text>
+                                        <Text>{dayjs(e.releaseDate).format('MM-YYYY')}</Text>
                                     </Card.Section>
                                 </Card>
                             </Link>
