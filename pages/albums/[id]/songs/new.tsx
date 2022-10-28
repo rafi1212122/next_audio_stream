@@ -122,7 +122,7 @@ export default function AlbumNewSong({ album }) {
                     <Link passHref href={`/albums/${album.id}`}>
                         <Button color={'gray'} variant='outline' component="a" type='submit'>Back</Button>
                     </Link>
-                    <Button onClick={submitHadler}>Submit</Button>
+                    <Button disabled={submitting} onClick={submitHadler}>Submit</Button>
                 </Card.Section>
             </Card>
         </div>

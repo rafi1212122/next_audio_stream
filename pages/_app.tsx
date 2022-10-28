@@ -33,11 +33,15 @@ function MyApp({ Component, pageProps }) {
     if(localStorage.getItem('theme_override')){
       setThemeOverride(parseInt(localStorage.getItem('theme_override'))>2?2:(parseInt(localStorage.getItem('theme_override'))<1?0:1))
     }
+    if(localStorage.getItem('player_volume')){
+      setPlayerState(playerState=>({...playerState, volume: parseInt(localStorage.getItem('player_volume'))}))
+    }
   }, [])
 
   useDidUpdate(()=> {
     localStorage.setItem('theme_override', String(themeOverride))
-  }, [themeOverride])
+    localStorage.setItem('player_volume', playerState.volume.toString())
+  }, [themeOverride, playerState.volume])
 
   useEffect(()=>{
     getProfile()

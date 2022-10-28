@@ -18,7 +18,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
             const { title, altTitle, audio, artistIds, albumId, albumIndex } = req.body
             if(!title||!audio||!artistIds||!albumId||!albumIndex)return res.status(400).json({ message: "Invalid body!" })
             let audioBase = audio.match(/^data:([A-Za-z0-9-+\/]+);base64,(.+)$/);
-            if(!(audio.startsWith('data:audio')||audio.startsWith('data:video/webm'))||audioBase.length<3)return res.status(400).json({ message: "Invalid audio!" })
+            if(!(audio.startsWith('data:audio')||audio.startsWith('data:video/webm'))||audioBase.length<3)return res.status(400).json({ message: "Unsupported audio!" })
             const s3 = new AWS.S3({
                 accessKeyId: process.env.S3_ACCESS_KEY ,
                 secretAccessKey: process.env.S3_SECRET_KEY ,

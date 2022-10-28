@@ -16,6 +16,9 @@ const DynamicNavbar = dynamic(() => import('./Navbar'), {
 })
 
 export default function Layout({ children }){
+    const coverCanvas = useRef<HTMLCanvasElement>(null)
+    const coverImage = useRef<HTMLImageElement>(null)
+    const coverVideo = useRef<HTMLVideoElement>(null)
     const [queueDrawerState, setQueueDrawerState] = useState(false)
     const [volumeSliderFocused, setVolumeSliderFocused] = useState(false)
     const [playerProgress, setPlayerProgress] = useState(0)
@@ -46,6 +49,25 @@ export default function Layout({ children }){
     }, [playerState.isMuted])
 
     useEffect(()=>{
+        if(queue.length<1){
+            if (document.pictureInPictureElement) {
+                document.exitPictureInPicture();
+            }
+            return
+        }
+        coverImage.current.src = queue[0]?.poster
+        coverImage.current.addEventListener('load', () => {
+            coverCanvas.current.width = coverImage.current.width
+            coverCanvas.current.height = coverImage.current.height
+            const ctx = coverCanvas.current.getContext('2d')
+            ctx.drawImage(coverImage.current, 0, 0)
+            coverVideo.current.srcObject = coverCanvas.current.captureStream()
+            coverVideo.current.muted = true
+            coverVideo.current.play()
+        })
+    }, [queue[0]?.poster])
+
+    useEffect(()=>{
         playerRef.current.volume = playerState.volume/100
     }, [playerState.volume])
 
@@ -53,6 +75,10 @@ export default function Layout({ children }){
         if(queue.length>0){
             setPlayerState(playerState=>({...playerState, max: playerRef.current.duration}))
         }
+        coverCanvas.current = document.createElement('canvas')
+        coverVideo.current = document.createElement('video')
+        coverImage.current = new Image()
+
     }, [])
     
     const handleSliderChange = (e: number) => {
@@ -181,6 +207,12 @@ export default function Layout({ children }){
                                 <ActionIcon onClick={()=>handleNext()} style={{ height:24, width:24 }}>
                                     <svg style={{ height:24, width:24 }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                         <path d="M4.555 5.168A1 1 0 003 6v8a1 1 0 001.555.832L10 11.202V14a1 1 0 001.555.832l6-4a1 1 0 000-1.664l-6-4A1 1 0 0010 6v2.798l-5.445-3.63z" />
+                                    </svg>
+                                </ActionIcon>
+                                <ActionIcon onClick={()=>document.pictureInPictureElement?document.exitPictureInPicture():coverVideo.current.requestPictureInPicture()} style={{ height:20, width:20 }}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h13A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 12.5v-9zM1.5 3a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-13z"/>
+                                        <path d="M8 8.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-.5.5h-5a.5.5 0 0 1-.5-.5v-3z"/>
                                     </svg>
                                 </ActionIcon>
                             </Group>
