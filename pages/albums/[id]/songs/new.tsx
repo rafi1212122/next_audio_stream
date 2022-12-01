@@ -1,5 +1,5 @@
 import { Button, Card, FileButton, Group, Input, LoadingOverlay, MultiSelect, Text, Title } from "@mantine/core"
-import { showNotification } from "@mantine/notifications";
+import { showNotification, updateNotification } from "@mantine/notifications";
 import { Artist } from "@prisma/client";
 import axios from "axios";
 import { GetServerSidePropsContext } from "next"
@@ -10,7 +10,8 @@ import { ChangeEvent, useEffect, useState } from "react";
 import { prisma } from '../../../../helpers/prismaConnect'
 
 export default function AlbumNewSong({ album }) {
-    const [submitting, setSubmitting] = useState(false)
+    const [submitting, setSubmitting] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
     const [file, setFile] = useState<File | null>(null);
     const [base64File, setBase64File] = useState("");
     const [titleInput, setTitleInput] = useState("");
@@ -39,6 +40,16 @@ export default function AlbumNewSong({ album }) {
             });
         }
         setSubmitting(true)
+        showNotification({
+            id: 'create-audio-error',
+            title: `Uploading(${uploadProgress}%)`,
+            message: "Uploading file",
+            color: 'green',
+            radius: 'xs',
+            loading: true,
+            autoClose: false,
+            disallowClose: true,
+        });
         await axios.post('/api/musics', {
             title: titleInput,
             altTitle: altTitleInput,
@@ -46,14 +57,40 @@ export default function AlbumNewSong({ album }) {
             albumId: album.id,
             albumIndex: albumIndexInput,
             audio: base64File,
+        }, {
+            onUploadProgress: (progressEvent) => {
+                if((progressEvent.loaded / progressEvent.total) * 100===100){
+                    updateNotification({
+                        id: 'create-audio-error',
+                        title: "Proccessing...",
+                        message: "Proccessing audio, please keep the window open",
+                        color: 'green',
+                        radius: 'xs',
+                        loading: true,
+                        autoClose: false,
+                        disallowClose: true,
+                    });
+                    return
+                }
+                updateNotification({
+                    id: 'create-audio-error',
+                    title: `Uploading(${((progressEvent.loaded / progressEvent.total) * 100).toFixed(2)}%)`,
+                    message: "Uploading file",
+                    color: 'green',
+                    radius: 'xs',
+                    loading: true,
+                    autoClose: false,
+                    disallowClose: true,
+                });
+            }
         }).then((response) => {
-            showNotification({
+            updateNotification({
                 id: 'create-audio-error',
                 title: "Success!",
                 message: response.data.message,
                 color: 'green',
                 radius: 'xs',
-            });
+            })
             return router.push(`/albums/${router.query.id}`)
         }).catch((err)=>{
             if(err.response.status!==400&&err.response.status!==403){
