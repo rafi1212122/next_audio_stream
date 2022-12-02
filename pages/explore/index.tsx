@@ -1,4 +1,4 @@
-import { AspectRatio, Card, Grid, Group, Image, Input, Stack, Text, Title } from "@mantine/core"
+import { AspectRatio, Card, Grid, Group, Image, Input, Paper, Stack, Text, Title } from "@mantine/core"
 import { useDebouncedState } from "@mantine/hooks"
 import { Album, Artist } from "@prisma/client"
 import axios from "axios"
@@ -63,7 +63,7 @@ export default function Explore() {
                         <Link passHref href={`/artists/${i.id}`}>
                             <Card component="a" shadow="sm" p="sm" radius="md" withBorder>
                                 <Group style={{ alignItems: 'flex-start' }}>
-                                    <Image height={'7rem'} width={'7rem'} radius={'sm'} src={`${i.albums.length>0?`/api/files/${i.albums[0].albumArt}?q=75&w=256`:"https://dummyimage.com/256x256/555/555"}`}/>
+                                    {i.albums.length>0?<Image height={'7rem'} width={'7rem'} radius={'sm'} src={`${`/api/files/${i.albums[0].albumArt}?q=75&w=256`}`}/>:<Paper radius={'sm'} sx={()=>({ background: '#555555', height: '7rem', width: '7rem' })}/>}
                                     <Stack spacing={0} pt={'sm'}>
                                         <Text weight={500}>{i.name}</Text>
                                         <Text size="sm" color="dimmed">{i.altName}</Text>

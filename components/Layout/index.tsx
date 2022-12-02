@@ -110,7 +110,6 @@ export default function Layout({ children }){
 
     useEffect(()=> {
         if (queue.length>0&&'mediaSession' in navigator) {
-            console.log('media session works!')
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: queue[0]&&`${queue[0]?.title} ${queue[0]?.altTitle&&`(${queue[0]?.altTitle})`}`,
                 artist: queue[0]?.artists?.map((a: any, index: any)=>`${index<queue[0]?.artists?.length&&index!==0?", ":""}${a.name}`),
@@ -124,6 +123,20 @@ export default function Layout({ children }){
             navigator.mediaSession.setActionHandler('nexttrack', () => handleNext());
             navigator.mediaSession.setActionHandler("seekforward", handleMediaSessionSeek);
             navigator.mediaSession.setActionHandler("seekbackward", handleMediaSessionSeek);
+        }
+        if(queue.length>0){
+            let initialArray = []
+            if(localStorage.getItem('recent')){
+                try {
+                    initialArray = JSON.parse(localStorage.getItem('recent'))
+                } catch (error) {
+                    console.log(error)
+                    initialArray = []
+                }
+            }
+            initialArray.unshift(queue[0]?.id)
+            initialArray = initialArray.filter((v, i, a) => a.indexOf(v) === i) //unique
+            localStorage.setItem('recent', JSON.stringify(initialArray.slice(0,5)))
         }
     }, [queue])
 

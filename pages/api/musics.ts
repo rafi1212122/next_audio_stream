@@ -12,9 +12,51 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
     const token:string = req.cookies._token
     const decodedToken = jwt.decode(token) as any
 
-    if(!decodedToken) return res.status(403).json({ message: "You must be logged in to use this feature" })
     switch(req.method){
+        case'GET': 
+            const { id } = req.query
+            if(!id){
+                return res.status(400).json({ message: "Required at least one id!" })
+            }else if(Array.isArray(id)){
+                return res.json(JSON.parse(JSON.stringify({
+                    music: await prisma.music.findMany({
+                        where: {
+                            id: {
+                                in: id
+                            }
+                        },
+                        include: {
+                            album: {
+                                select: {
+                                    id: true,
+                                    albumArt: true,
+                                }
+                            },
+                            artists: true
+                        },
+                    })
+                }, (key, value) => (typeof value === 'bigint' ? value.toString() : value))))
+            }else{
+                return res.json(JSON.parse(JSON.stringify({
+                    music: await prisma.music.findFirst({
+                        where: {
+                            id
+                        },
+                        include: {
+                            album: {
+                                select: {
+                                    id: true,
+                                    albumArt: true,
+                                }
+                            },
+                            artists: true
+                        },
+                    })
+                }, (key, value) => (typeof value === 'bigint' ? value.toString() : value))))
+            }
+
         case'POST':
+            if(!decodedToken) return res.status(403).json({ message: "You must be logged in to use this feature" })
             const { title, altTitle, audio, artistIds, albumId, albumIndex } = req.body
             if(!title||!audio||!artistIds||!albumId||!albumIndex)return res.status(400).json({ message: "Invalid body!" })
             let audioBase = audio.match(/^data:([A-Za-z0-9-+\/]+);base64,(.+)$/);
