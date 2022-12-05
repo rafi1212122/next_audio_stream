@@ -69,7 +69,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
                 signatureVersion: 'v4'
             });
             let pass = new stream.PassThrough();
-            ffmpeg(streamifier.createReadStream(Buffer.from(audioBase[2], 'base64'))).audioCodec('libopus').audioBitrate('196k').format('ogg').noVideo().output(pass, { end: true }).run()
+            ffmpeg(streamifier.createReadStream(Buffer.from(audioBase[2], 'base64'))).audioCodec('libopus').audioBitrate('196k').format('ogg').noVideo().outputOptions('-map_metadata -1').output(pass, { end: true }).run()
             const uploadAudio = await s3.upload({ Bucket: 'test', Key: `media/audio/${cuid()}.ogg`, Body: pass, ContentType: audioBase[1] }).promise()
             const newData = await prisma.music.create({
                 data: {
