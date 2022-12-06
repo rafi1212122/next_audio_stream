@@ -26,7 +26,11 @@ export default function Home() {
         }
         axios.get(url).then(({data}) => {
           if(!data.music)return
-          setRecentData(data.music)
+          if(recentIds.length>1){
+            setRecentData(data.music)
+          }else {
+            setRecentData([data.music])
+          }
         })
       }
     }, 250)
