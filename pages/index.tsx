@@ -26,10 +26,10 @@ export default function Home() {
         }
         axios.get(url).then(({data}) => {
           if(!data.music)return
-          if(recentIds.length>1){
-            setRecentData(data.music)
+          if(Array.isArray(data.music)){
+            return setRecentData(data.music)
           }else {
-            setRecentData([data.music])
+            return setRecentData([data.music])
           }
         })
       }
