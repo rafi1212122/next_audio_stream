@@ -1,7 +1,7 @@
-import { ActionIcon, Card, Drawer, Group, Image, Slider, Stack, Text } from "@mantine/core"
+import { ActionIcon, Card, CloseButton, Drawer, Group, Image, Slider, Stack, Text } from "@mantine/core"
 import Link from "next/link"
 
-export default function QueueDrawer({ queueDrawerState, setQueueDrawerState, smallScreen, handleNext, queue, playerState, playerProgress, handleSliderChangeEnd, handleSliderChange, setPlayerState }) {
+export default function QueueDrawer({ queueDrawerState, setQueueDrawerState, smallScreen, handleNext, queue, playerState, playerProgress, handleSliderChangeEnd, handleSliderChange, setPlayerState, setQueue }) {
 
     return(
         <Drawer
@@ -96,30 +96,33 @@ export default function QueueDrawer({ queueDrawerState, setQueueDrawerState, sma
         <Card mt={'0.5rem'}>
         {queue[1]&&queue.slice(1).map((el: any, index)=>{
             return<Card.Section key={index} withBorder p={'sm'}>
-            <Group spacing={'sm'} noWrap style={{ alignItems: 'center' }}>
-                <ActionIcon onClick={()=>handleNext(index+1)} color={'blue'}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width={20}><path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" /></svg></ActionIcon>
-                <Image height={'3.5rem'} width={'3.5rem'} radius={'sm'} src={el?.poster}/>
-                <Stack spacing={0}>
-                    <Link passHref href={`/albums/${el.albumId}`}>
-                        <Text sx={()=>({
-                            ':hover': {
-                                textDecoration: 'underline'
-                            }
-                        })} onClick={()=>setQueueDrawerState(false)} component="a" weight={'bold'}>{`${el?.title} ${(el?.altTitle&&!smallScreen)?`(${el?.altTitle})`:""}`}</Text>
-                    </Link>
-                    <Group spacing={0}>
-                    {el?.artists?.map((a: any, index: any)=>
-                        <Link href={`/artists/${a.id}`} key={a.id} passHref>
-                            <Text sx={()=>({
-                                ':hover': {
-                                    textDecoration: 'underline'
-                                }
-                            })} onClick={()=>setQueueDrawerState(false)} component='a' size="sm" color="dimmed">{index<el?.artists?.length&&index!==0?", ":""}{a.name}</Text>
-                        </Link>
-                    )}
+                <Group noWrap position="apart">
+                    <Group spacing={'sm'} noWrap style={{ alignItems: 'center' }}>
+                        <ActionIcon onClick={()=>handleNext(index+1)} color={'blue'}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width={20}><path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" /></svg></ActionIcon>
+                        <Image height={'3.5rem'} width={'3.5rem'} radius={'sm'} src={el?.poster}/>
+                        <Stack spacing={0}>
+                            <Link passHref href={`/albums/${el.albumId}`}>
+                                <Text sx={()=>({
+                                    ':hover': {
+                                        textDecoration: 'underline'
+                                    }
+                                })} onClick={()=>setQueueDrawerState(false)} component="a" weight={'bold'}>{`${el?.title} ${(el?.altTitle&&!smallScreen)?`(${el?.altTitle})`:""}`}</Text>
+                            </Link>
+                            <Group spacing={0}>
+                            {el?.artists?.map((a: any, index: any)=>
+                                <Link href={`/artists/${a.id}`} key={a.id} passHref>
+                                    <Text sx={()=>({
+                                        ':hover': {
+                                            textDecoration: 'underline'
+                                        }
+                                    })} onClick={()=>setQueueDrawerState(false)} component='a' size="sm" color="dimmed">{index<el?.artists?.length&&index!==0?", ":""}{a.name}</Text>
+                                </Link>
+                            )}
+                            </Group>
+                        </Stack>
                     </Group>
-                </Stack>
-            </Group>
+                    <CloseButton color={'red'} onClick={() => setQueue(prevValue => prevValue.filter((val) => val.id!==el.id ))}/>
+                </Group>
         </Card.Section>
         })}
         </Card>

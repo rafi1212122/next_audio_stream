@@ -6,6 +6,8 @@ import useHover from '../../helpers/useHover';
 import Link from 'next/link';
 import dynamic from 'next/dynamic'
 import QueueDrawer from './QueueDrawer';
+import Script from 'next/script';
+import axios from 'axios';
 
 const DynamicHeader = dynamic(() => import('./Header'), {
   suspense: true
@@ -20,6 +22,7 @@ export default function Layout({ children }){
     const coverImage = useRef<HTMLImageElement>(null)
     const coverVideo = useRef<HTMLVideoElement>(null)
     const [queueDrawerState, setQueueDrawerState] = useState(false)
+    const [isCaptchaLoaded, setIsCaptchaLoaded] = useState(false)
     const [volumeSliderFocused, setVolumeSliderFocused] = useState(false)
     const [playerProgress, setPlayerProgress] = useState(0)
     const [volumeRef, isVolumeHovered] = useHover()
@@ -31,6 +34,21 @@ export default function Layout({ children }){
     const { start, clear } = useTimeout(() => {
         setPlayerState(playerState=>({...playerState, isSeeking: false}))
     }, 2000);
+    const reportTimeout = useTimeout(() => {
+        if(isCaptchaLoaded){
+            grecaptcha.ready(function() {
+                grecaptcha.execute(process.env.NEXT_PUBLIC_RECAPTCHA_SITE, {action: 'submit'}).then(function(token) {
+                    axios.post('/api/report', {
+                        type: 'streams',
+                        data: {
+                            captchaRes: token,
+                            musicId: queue[0]?.id
+                        }
+                    })
+                });
+            });
+        }
+    }, 10000);
     
     useEffect(()=>{
         if(playerState.isPlaying){
@@ -78,7 +96,6 @@ export default function Layout({ children }){
         coverCanvas.current = document.createElement('canvas')
         coverVideo.current = document.createElement('video')
         coverImage.current = new Image()
-
     }, [])
     
     const handleSliderChange = (e: number) => {
@@ -109,6 +126,7 @@ export default function Layout({ children }){
     }
 
     useEffect(()=> {
+        reportTimeout.clear()
         if (queue.length>0&&'mediaSession' in navigator) {
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: queue[0]&&`${queue[0]?.title} ${queue[0]?.altTitle&&`(${queue[0]?.altTitle})`}`,
@@ -124,6 +142,7 @@ export default function Layout({ children }){
             navigator.mediaSession.setActionHandler("seekforward", handleMediaSessionSeek);
             navigator.mediaSession.setActionHandler("seekbackward", handleMediaSessionSeek);
         }
+
         if(queue.length>0){
             let initialArray = []
             if(localStorage.getItem('recent')){
@@ -137,6 +156,8 @@ export default function Layout({ children }){
             initialArray.unshift(queue[0]?.id)
             initialArray = initialArray.filter((v, i, a) => a.indexOf(v) === i) //unique
             localStorage.setItem('recent', JSON.stringify(initialArray.slice(0,5)))
+
+            reportTimeout.start()
         }
     }, [queue])
 
@@ -286,7 +307,7 @@ export default function Layout({ children }){
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0l-3.75-3.75M17.25 21L21 17.25" />
                                 </svg>
                             </ActionIcon>
-                            <QueueDrawer setPlayerState={setPlayerState} handleSliderChange={handleSliderChange} handleSliderChangeEnd={handleSliderChangeEnd} playerProgress={playerProgress} playerState={playerState} queue={queue} handleNext={handleNext} queueDrawerState={queueDrawerState} smallScreen={smallScreen} setQueueDrawerState={setQueueDrawerState}/>
+                            <QueueDrawer setQueue={setQueue} setPlayerState={setPlayerState} handleSliderChange={handleSliderChange} handleSliderChangeEnd={handleSliderChangeEnd} playerProgress={playerProgress} playerState={playerState} queue={queue} handleNext={handleNext} queueDrawerState={queueDrawerState} smallScreen={smallScreen} setQueueDrawerState={setQueueDrawerState}/>
                         </Group>
                     </Group>
                 </Footer>
@@ -303,6 +324,7 @@ export default function Layout({ children }){
             padding={0}
         >
             {children}
+            <Script strategy='afterInteractive' onLoad={()=>setIsCaptchaLoaded(true)} src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE}`}/>
         </AppShell>
     )
-  }
+}
