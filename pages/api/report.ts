@@ -25,9 +25,11 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
                         }
                         return res.json(data)
                     })
+                    break
                 default:
                     return res.status(400).json({ message: "invalid type!" })
             }
+            break
         default:
             return res.status(405).json({ message: req.method+' method is not allowed!' })
     }

@@ -1,4 +1,4 @@
-import { AppShell, Navbar, Group, ActionIcon, Stack, Anchor, Text, Slider, Footer, Header, Popover, Modal } from '@mantine/core';
+import { AppShell, Navbar, Group, ActionIcon, Stack, Anchor, Text, Slider, Footer, Header, Popover, Modal, Card, Title } from '@mantine/core';
 import { Suspense, useContext, useEffect, useRef, useState } from 'react';
 import DataContext from '../../helpers/DataContext';
 import { useDisclosure, useDocumentVisibility, useHotkeys, useMediaQuery, useTimeout } from '@mantine/hooks';
@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic'
 import QueueDrawer from './QueueDrawer';
 import Script from 'next/script';
 import axios from 'axios';
+import { LyricsOutput } from 'lyrics-dumper';
 
 const DynamicHeader = dynamic(() => import('./Header'), {
   suspense: true
@@ -23,7 +24,7 @@ export default function Layout({ children }){
     const coverImage = useRef<HTMLImageElement>(null)
     const coverVideo = useRef<HTMLVideoElement>(null)
     const [queueDrawerState, setQueueDrawerState] = useState(false)
-    const [lyrics, setLyrics] = useState("")
+    const [lyrics, setLyrics] = useState<LyricsOutput>({})
     const [isCaptchaLoaded, setIsCaptchaLoaded] = useState(false)
     const [volumeSliderFocused, setVolumeSliderFocused] = useState(false)
     const [playerProgress, setPlayerProgress] = useState(0)
@@ -145,6 +146,7 @@ export default function Layout({ children }){
             navigator.mediaSession.setActionHandler("seekbackward", handleMediaSessionSeek);
         }
 
+        setLyrics({})
         if(queue.length>0){
             let initialArray = []
             if(localStorage.getItem('recent')){
@@ -161,11 +163,10 @@ export default function Layout({ children }){
 
             reportTimeout.start()
 
-            setLyrics('')
             axios.get(`/api/lyrics?id=${queue[0]?.id}`).then((res)=> {
-                setLyrics(res.data?.lyrics)
+                setLyrics(res.data)
             }).catch(()=> {
-                setLyrics("")
+                setLyrics({})
             })
         }
     }, [queue])
@@ -340,7 +341,15 @@ export default function Layout({ children }){
         >
             {children}
             <Modal opened={isLyricModalopened} onClose={lyricModal.close} centered size={'auto'}>
-                <Text style={{ whiteSpace: 'pre-line' }} align='center'>{lyrics?lyrics:'Lyrics not available 😭😭😭'}</Text>
+                <Card withBorder shadow="sm" radius="md">
+                    <Card.Section px="sm" withBorder>
+                        <Title pt={'md'} mb={'xs'} sx={(theme) => ({ color: theme.colorScheme === 'dark' ? "white" : "black" })} order={3}>{queue.length>0?`${queue[0]?.title} - ${queue[0]?.artists?.map((a: any, index: any)=>`${index<queue[0]?.artists?.length&&index!==0?" & ":""}${a.name}`)}`:'Nothing is playing'}</Title>
+                    </Card.Section>
+                    <Card.Section p="sm">
+                        <Text style={{ whiteSpace: 'pre-line' }} align='center'>{lyrics?.lyrics?lyrics?.lyrics:'Lyrics not available 😭😭😭'}</Text>
+                        <Text size={'sm'} pt={'md'} color={'dimmed'}>Lyrics from: {lyrics?.source?lyrics?.source:'-'}</Text>
+                    </Card.Section>
+                </Card>
             </Modal>
             <Script strategy='afterInteractive' onLoad={()=>setIsCaptchaLoaded(true)} src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE}`}/>
         </AppShell>
