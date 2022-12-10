@@ -44,8 +44,8 @@ export default function Explore() {
                                 <Stack spacing={0} style={{ alignItems: 'flex-start' }}>
                                     <Image height={'7rem'} width={'7rem'} radius={'sm'} src={`/api/files/${i.album.albumArt}?q=75&w=256`}/>
                                     <Stack spacing={0} pt={'sm'}>
-                                        <Text weight={500}>{`${i.title} ${i.altTitle&&`(${i.altTitle})`}`}</Text>
-                                        <Text size="sm" color="dimmed">{i.artists.map((artist: any, index: any)=>`${index<i.artists.length&&index!==0?", ":""}${`${artist.name} ${`${artist.altName&&`(${artist.altName})`}`}`}`)}</Text>
+                                        <Text lineClamp={1} weight={500}>{`${i.title} ${i.altTitle&&`(${i.altTitle})`}`}</Text>
+                                        <Text lineClamp={1} size="sm" color="dimmed">{i.artists.map((artist: any, index: any)=>`${index<i.artists.length&&index!==0?", ":""}${`${artist.name} ${`${artist.altName&&`(${artist.altName})`}`}`}`)}</Text>
                                     </Stack>
                                 </Stack>
                             </Card>

@@ -32,7 +32,7 @@ export default function QueueDrawer({ queueDrawerState, setQueueDrawerState, sma
                                     ':hover': {
                                         textDecoration: 'underline'
                                     }
-                                })} onClick={()=>setQueueDrawerState(false)} component="a" weight={'bold'}>{`${queue[0]?.title} ${(queue[0]?.altTitle&&!smallScreen)?`(${queue[0]?.altTitle})`:""}`}</Text>
+                                })} lineClamp={1} onClick={()=>setQueueDrawerState(false)} component="a" weight={'bold'}>{`${queue[0]?.title} ${(queue[0]?.altTitle)?`(${queue[0]?.altTitle})`:""}`}</Text>
                             </Link>
                             <Group spacing={0}>
                             {queue[0]?.artists?.map((a: any, index: any)=>
@@ -106,7 +106,7 @@ export default function QueueDrawer({ queueDrawerState, setQueueDrawerState, sma
                                     ':hover': {
                                         textDecoration: 'underline'
                                     }
-                                })} onClick={()=>setQueueDrawerState(false)} component="a" weight={'bold'}>{`${el?.title} ${(el?.altTitle&&!smallScreen)?`(${el?.altTitle})`:""}`}</Text>
+                                })} lineClamp={1} onClick={()=>setQueueDrawerState(false)} component="a" weight={'bold'}>{`${el?.title} ${(el?.altTitle)?`(${el?.altTitle})`:""}`}</Text>
                             </Link>
                             <Group spacing={0}>
                             {el?.artists?.map((a: any, index: any)=>

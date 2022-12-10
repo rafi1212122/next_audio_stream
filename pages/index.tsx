@@ -1,4 +1,4 @@
-import { Card, Grid, Image, Paper, Skeleton, Stack, Text, Title } from "@mantine/core"
+import { Anchor, Card, Grid, Group, Image, Paper, Skeleton, Stack, Text, Title } from "@mantine/core"
 import axios from "axios"
 import Head from "next/head"
 import Link from "next/link"
@@ -41,9 +41,12 @@ export default function Home() {
       <Head>
         <title>Home</title>
       </Head>
-      <Title pt={'md'} mb={'xs'} sx={(theme) => ({ color: theme.colorScheme === 'dark' ? "white" : "black" })} order={3}>Recently Played</Title>
-      <Grid>
-      {recentIds?.map((i)=>{
+      <Group position="apart">
+        <Title pt={'md'} mb={'xs'} sx={(theme) => ({ color: theme.colorScheme === 'dark' ? "white" : "black" })} order={3}>Recently Played</Title>
+        <Anchor size={'sm'} color='dimmed' component="a">View More</Anchor>
+      </Group>
+      <Grid columns={10}>
+      {recentIds?.map((i, index)=>{
           let music = recentData.find(v => v.id === i)
           return music ? (
               <Grid.Col key={music.id} span={5} sm={10/3} md={10/4} xl={10/6}>
@@ -52,8 +55,8 @@ export default function Home() {
                           <Stack spacing={0} align="flex-start">
                               <Image height={'7rem'} width={'7rem'} radius={'sm'} src={`/api/files/${music.album.albumArt}?q=75&w=256`}/>
                               <Stack spacing={0} pt={'sm'}>
-                                  <Text weight={500}>{`${music.title} ${music.altTitle&&`(${music.altTitle})`}`}</Text>
-                                  <Text size="sm" color="dimmed">{music.artists.map((artist: any, index: any)=><Fragment key={index}>{index<music.artists.length&&index!==0?", ":""}{`${artist.name} ${`${artist.altName&&`(${artist.altName})`}`}`}</Fragment>)}</Text>
+                                  <Text lineClamp={1} weight={500}>{`${music.title} ${music.altTitle&&`(${music.altTitle})`}`}</Text>
+                                  <Text lineClamp={1} size="sm" color="dimmed">{music.artists.map((artist: any, index: any)=><Fragment key={index}>{index<music.artists.length&&index!==0?", ":""}{`${artist.name} ${`${artist.altName&&`(${artist.altName})`}`}`}</Fragment>)}</Text>
                               </Stack>
                           </Stack>
                       </Card>

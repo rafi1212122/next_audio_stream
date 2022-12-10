@@ -1,7 +1,7 @@
-import { AppShell, Navbar, Group, ActionIcon, Stack, Anchor, Text, Slider, Footer, Header, Popover } from '@mantine/core';
+import { AppShell, Navbar, Group, ActionIcon, Stack, Anchor, Text, Slider, Footer, Header, Popover, Modal } from '@mantine/core';
 import { Suspense, useContext, useEffect, useRef, useState } from 'react';
 import DataContext from '../../helpers/DataContext';
-import { useDocumentVisibility, useHotkeys, useMediaQuery, useTimeout } from '@mantine/hooks';
+import { useDisclosure, useDocumentVisibility, useHotkeys, useMediaQuery, useTimeout } from '@mantine/hooks';
 import useHover from '../../helpers/useHover';
 import Link from 'next/link';
 import dynamic from 'next/dynamic'
@@ -18,10 +18,12 @@ const DynamicNavbar = dynamic(() => import('./Navbar'), {
 })
 
 export default function Layout({ children }){
+    const [isLyricModalopened, lyricModal] = useDisclosure(false);
     const coverCanvas = useRef<HTMLCanvasElement>(null)
     const coverImage = useRef<HTMLImageElement>(null)
     const coverVideo = useRef<HTMLVideoElement>(null)
     const [queueDrawerState, setQueueDrawerState] = useState(false)
+    const [lyrics, setLyrics] = useState("")
     const [isCaptchaLoaded, setIsCaptchaLoaded] = useState(false)
     const [volumeSliderFocused, setVolumeSliderFocused] = useState(false)
     const [playerProgress, setPlayerProgress] = useState(0)
@@ -155,9 +157,16 @@ export default function Layout({ children }){
             }
             initialArray.unshift(queue[0]?.id)
             initialArray = initialArray.filter((v, i, a) => a.indexOf(v) === i) //unique
-            localStorage.setItem('recent', JSON.stringify(initialArray.slice(0,5)))
+            localStorage.setItem('recent', JSON.stringify(initialArray.slice(0,25)))
 
             reportTimeout.start()
+
+            setLyrics('')
+            axios.get(`/api/lyrics?id=${queue[0]?.id}`).then((res)=> {
+                setLyrics(res.data?.lyrics)
+            }).catch(()=> {
+                setLyrics("")
+            })
         }
     }, [queue])
 
@@ -202,7 +211,7 @@ export default function Layout({ children }){
                             {smallScreen&&<img style={{ objectFit: 'contain', backdropFilter: 'blur(0.5rem) brightness(0.5)', width: 'calc(90px - 1.5rem)', height: 'calc(90px - 1.5rem)', borderRadius: '0.2rem' }} src={queue[0]?.poster||'data:image/jpeg;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}/>}
                             <Stack style={{ maxWidth: smallScreen?'calc(66vw - calc(90px + 1rem))':'initial' }} spacing={0} justify={'space-around'}>
                                 <Link passHref href={`/albums/${queue[0]?.albumId}`}>
-                                    <Text component='a' sx={{ ':hover': { textDecoration: 'underline' }, cursor: 'pointer' }} size='lg'><b>{queue[0]&&`${queue[0]?.title} ${(queue[0]?.altTitle&&!smallScreen)?`(${queue[0]?.altTitle})`:""}`}</b></Text>
+                                    <Text lineClamp={1} component='a' sx={{ ':hover': { textDecoration: 'underline' }, cursor: 'pointer' }} size='lg'><b>{queue[0]&&`${queue[0]?.title} ${(queue[0]?.altTitle)?`(${queue[0]?.altTitle})`:""}`}</b></Text>
                                 </Link>
                                 <Group spacing={0}>
                                 {queue[0]?.artists?.map((a: any, index: any)=>
@@ -223,6 +232,12 @@ export default function Layout({ children }){
                         </Group>
                         <Stack style={{ flex: 1.3, display: smallScreen?'none':'flex' }} align={'center'} justify={'center'} spacing={1}>
                             <Group spacing={0}>
+                                <ActionIcon onClick={lyricModal.open} style={{ height:20, width:20 }}>
+                                    <svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M8.25 4.5a3.75 3.75 0 117.5 0v8.25a3.75 3.75 0 11-7.5 0V4.5z" />
+                                        <path d="M6 10.5a.75.75 0 01.75.75v1.5a5.25 5.25 0 1010.5 0v-1.5a.75.75 0 011.5 0v1.5a6.751 6.751 0 01-6 6.709v2.291h3a.75.75 0 010 1.5h-7.5a.75.75 0 010-1.5h3v-2.291a6.751 6.751 0 01-6-6.709v-1.5A.75.75 0 016 10.5z" />
+                                    </svg>
+                                </ActionIcon>
                                 <ActionIcon style={{ height:20, width:20, opacity: playerState.isLooping?1:0.5 }} onClick={()=>setPlayerState(playerState=>({...playerState, isLooping: !playerState.isLooping}))}>
                                     <svg style={{ height:20, width:20 }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                         <path d="M8 5a1 1 0 100 2h5.586l-1.293 1.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L13.586 5H8zM12 15a1 1 0 100-2H6.414l1.293-1.293a1 1 0 10-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L6.414 15H12z" />
@@ -273,7 +288,7 @@ export default function Layout({ children }){
                                 </Group>
                             </div>
                         </Stack>
-                        <Group style={{ flex: 1, justifyContent: 'end' }} ref={volumeRef} spacing={10}>
+                        <Group style={{ flex: 1, justifyContent: 'end' }} spacing={10}>
                             {smallScreen?
                             <Popover width={'target'} position="top" shadow="sm">
                                 <Popover.Target>
@@ -300,7 +315,7 @@ export default function Layout({ children }){
                             <Slider styles={{
                                 thumb: { backgroundColor: 'white', opacity: isVolumeHovered?1:0 },
                                 track: { margin: 0, '&:before': { right: 0, left: 0 } }
-                            }} onFocus={()=>setVolumeSliderFocused(true)} onBlur={()=>setVolumeSliderFocused(false)} labelTransition={'pop'} labelTransitionDuration={150} disabled={playerState.isMuted} min={0} size={'sm'} max={100} style={{ width: '7vw' }} value={playerState.volume} onChange={(val)=>setPlayerState(playerState=>({...playerState, volume:val}))}/>
+                            }} ref={volumeRef} onFocus={()=>setVolumeSliderFocused(true)} onBlur={()=>setVolumeSliderFocused(false)} labelTransition={'pop'} labelTransitionDuration={150} disabled={playerState.isMuted} min={0} size={'sm'} max={100} style={{ width: '7vw' }} value={playerState.volume} onChange={(val)=>setPlayerState(playerState=>({...playerState, volume:val}))}/>
                             </>}
                             <ActionIcon onClick={()=>setQueueDrawerState(true)} color={'blue'} variant="light" title='Queue' size={'lg'}>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width={20}>
@@ -324,6 +339,9 @@ export default function Layout({ children }){
             padding={0}
         >
             {children}
+            <Modal opened={isLyricModalopened} onClose={lyricModal.close} centered size={'auto'}>
+                <Text style={{ whiteSpace: 'pre-line' }} align='center'>{lyrics?lyrics:'Lyrics not available 😭😭😭'}</Text>
+            </Modal>
             <Script strategy='afterInteractive' onLoad={()=>setIsCaptchaLoaded(true)} src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE}`}/>
         </AppShell>
     )

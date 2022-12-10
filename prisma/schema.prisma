@@ -23,30 +23,32 @@ enum AlbumType {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  username  String   @unique
+  id        String     @id @default(cuid())
+  username  String     @unique
   password  String
-  level     Role     @default(USER)
+  level     Role       @default(USER)
   Music     Music[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  playlists Playlist[]
 }
 
 model Music {
-  id          String   @id @default(cuid())
+  id          String     @id @default(cuid())
   title       String
   altTitle    String
   resourceKey String
-  approved    Boolean  @default(false)
+  approved    Boolean    @default(false)
   albumIndex  Int
-  streams     BigInt   @default(0)
-  user        User     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  streams     BigInt     @default(0)
+  user        User       @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId      String
-  album       Album    @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  album       Album      @relation(fields: [albumId], references: [id], onDelete: Cascade)
   albumId     String
   artists     Artist[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  playlists   Playlist[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 model Artist {
@@ -70,4 +72,15 @@ model Album {
   musics      Music[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+model Playlist {
+  id        String   @id @default(cuid())
+  name      String
+  imageKey  String
+  musics    Music[]
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
 }
