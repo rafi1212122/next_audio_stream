@@ -219,10 +219,6 @@ export default function Layout({ children }){
                                     <Link key={a.id} passHref href={`/artists/${a.id}`}>
                                         <Anchor sx={(theme)=>({
                                             color: theme.colorScheme==='dark' ? theme.colors.gray[5] : theme.colors.gray[7],
-                                            '&:hover':{
-                                                color: theme.colorScheme==='dark' ? theme.colors.gray[2] : 'black',
-                                                fontWeight: 500
-                                            }
                                         })} component='a'>
                                             {index<queue[0]?.artists?.length&&index!==0?", ":""}{a.name}
                                         </Anchor>

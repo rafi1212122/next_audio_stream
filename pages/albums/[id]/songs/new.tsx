@@ -50,14 +50,17 @@ export default function AlbumNewSong({ album }) {
             autoClose: false,
             disallowClose: true,
         });
-        await axios.post('/api/musics', {
-            title: titleInput,
-            altTitle: altTitleInput,
-            artistIds: selectArtistInput,
-            albumId: album.id,
-            albumIndex: albumIndexInput,
-            audio: base64File,
-        }, {
+        const formData = new FormData();
+        formData.append('title', titleInput)
+        formData.append('altTitle', altTitleInput)
+        formData.append('artistIds', JSON.stringify(selectArtistInput))
+        formData.append('albumId', album.id)
+        formData.append('albumIndex', albumIndexInput.toString())
+        formData.append('audio', file)
+        await axios.post('/api/musics', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            },
             onUploadProgress: (progressEvent) => {
                 if((progressEvent.loaded / progressEvent.total) * 100===100){
                     updateNotification({

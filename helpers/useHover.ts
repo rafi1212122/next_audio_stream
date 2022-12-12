@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect, MutableRefObject } from 'react';
 
-export default function useHover():[MutableRefObject<HTMLDivElement>, Boolean] {
+export default function useHover():[MutableRefObject<HTMLDivElement>, boolean] {
   const [hovered, setHovered] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const onMouseEnter = useCallback(() => setHovered(true), []);

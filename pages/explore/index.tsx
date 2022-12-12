@@ -1,4 +1,5 @@
-import { AspectRatio, Card, Grid, Group, Image, Input, Paper, Stack, Text, Title } from "@mantine/core"
+import MusicsGrid from '../../components/Music/MusicsGrid';
+import { Card, Grid, Group, Image, Input, Paper, Stack, Text, Title } from "@mantine/core"
 import { useDebouncedState } from "@mantine/hooks"
 import { Album, Artist } from "@prisma/client"
 import axios from "axios"
@@ -35,25 +36,8 @@ export default function Explore() {
 
             {musics?.length>0&&<>
             <Title pt={'md'} sx={(theme) => ({ color: theme.colorScheme === 'dark' ? "white" : "black" })} order={3}>Songs</Title>
-            <Grid pt={'md'} columns={10}>
-            {musics?.map((i)=>{
-                return(
-                    <Grid.Col key={i.id} span={5} sm={10/3} md={10/4} xl={10/6}>
-                        <Link passHref href={`/albums/${i.album.id}`}>
-                            <Card component="a" shadow="sm" p="sm" radius="md" withBorder>
-                                <Stack spacing={0} style={{ alignItems: 'flex-start' }}>
-                                    <Image height={'7rem'} width={'7rem'} radius={'sm'} src={`/api/files/${i.album.albumArt}?q=75&w=256`}/>
-                                    <Stack spacing={0} pt={'sm'}>
-                                        <Text lineClamp={1} weight={500}>{`${i.title} ${i.altTitle&&`(${i.altTitle})`}`}</Text>
-                                        <Text lineClamp={1} size="sm" color="dimmed">{i.artists.map((artist: any, index: any)=>`${index<i.artists.length&&index!==0?", ":""}${`${artist.name} ${`${artist.altName&&`(${artist.altName})`}`}`}`)}</Text>
-                                    </Stack>
-                                </Stack>
-                            </Card>
-                        </Link>
-                    </Grid.Col>
-                )
-            })}
-            </Grid></>}
+            <MusicsGrid musics={musics}/>
+            </>}
             {artists?.length>0&&<>
             <Title pt={'lg'} sx={(theme) => ({ color: theme.colorScheme === 'dark' ? "white" : "black" })} order={3}>Artists</Title>
             <Grid pt={'md'} columns={10}>

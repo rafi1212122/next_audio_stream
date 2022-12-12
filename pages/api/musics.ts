@@ -3,10 +3,11 @@ import { prisma } from '../../helpers/prismaConnect'
 import AWS from 'aws-sdk'
 import cuid from "cuid";
 import jwt from 'jsonwebtoken'
-import mime from 'mime-types'
+import formidable from 'formidable'
 import ffmpeg from 'fluent-ffmpeg';
 import streamifier from 'streamifier'
 import stream from 'stream'
+import fs from 'fs'
 
 export default async function handler(req:NextApiRequest, res:NextApiResponse) {
     const token:string = req.cookies._token
@@ -29,6 +30,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
                             album: {
                                 select: {
                                     id: true,
+                                    name: true,
                                     albumArt: true,
                                 }
                             },
@@ -46,6 +48,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
                             album: {
                                 select: {
                                     id: true,
+                                    name: true,
                                     albumArt: true,
                                 }
                             },
@@ -56,11 +59,19 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
             }
 
         case'POST':
+            const formData: any = await new Promise((resolve, reject) => {
+                formidable().parse(req, (err, fields, files) => {
+                    if (err) reject({ err })
+                    resolve({ err, fields, files })
+                }) 
+            })
+            if(formData?.err) throw(formData?.err)
             if(!decodedToken) return res.status(403).json({ message: "You must be logged in to use this feature" })
-            const { title, altTitle, audio, artistIds, albumId, albumIndex } = req.body
-            if(!title||!audio||!artistIds||!albumId||!albumIndex)return res.status(400).json({ message: "Invalid body!" })
-            let audioBase = audio.match(/^data:([A-Za-z0-9-+\/]+);base64,(.+)$/);
-            if(!(audio.startsWith('data:audio')||audio.startsWith('data:video/webm'))||audioBase.length<3)return res.status(400).json({ message: "Unsupported audio!" })
+            const { title, altTitle, artistIds, albumId, albumIndex } = formData?.fields
+            const { audio } = formData?.files
+            if(!title||!artistIds||!albumId||!albumIndex||!audio)return res.status(400).json({ message: "Invalid body!" })
+            if(!Array.isArray(JSON.parse(artistIds)))return res.status(400).json({ message: "Invalid artistIds!" })
+            if(!(audio?.mimetype.startsWith('audio')||audio?.mimetype.startsWith('video/webm')))return res.status(400).json({ message: "Unsupported audio!" })
             const s3 = new AWS.S3({
                 accessKeyId: process.env.S3_ACCESS_KEY ,
                 secretAccessKey: process.env.S3_SECRET_KEY ,
@@ -69,11 +80,11 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
                 signatureVersion: 'v4'
             });
             let pass = new stream.PassThrough();
-            ffmpeg(streamifier.createReadStream(Buffer.from(audioBase[2], 'base64'))).audioCodec('libopus').audioBitrate('196k').format('ogg').noVideo().outputOptions('-map_metadata -1').output(pass, { end: true }).run()
-            const uploadAudio = await s3.upload({ Bucket: 'test', Key: `media/audio/${cuid()}.ogg`, Body: pass, ContentType: audioBase[1] }).promise()
+            ffmpeg(streamifier.createReadStream(fs.readFileSync(audio?.filepath))).setFfmpegPath('C:\\Windows\\ffmpeg\\bin\\ffmpeg.exe').audioCodec('libopus').audioBitrate('196k').format('ogg').noVideo().outputOptions('-map_metadata -1').output(pass, { end: true }).run()
+            const uploadAudio = await s3.upload({ Bucket: 'test', Key: `media/audio/${cuid()}.ogg`, Body: pass, ContentType: audio?.mimetype }).promise()
             const newData = await prisma.music.create({
                 data: {
-                    title,
+                    title: title,
                     altTitle: altTitle&&altTitle,
                     userId: decodedToken.sub,
                     albumId,
@@ -81,7 +92,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
                     resourceKey: uploadAudio.Key,
                     albumIndex: parseInt(albumIndex),
                     artists: {
-                        connect: artistIds.map((id)=>{
+                        connect: JSON.parse(artistIds).map((id)=>{
                             return {
                                 id: String(id)
                             }
@@ -111,8 +122,6 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
 
 export const config = {
     api: {
-        bodyParser: {
-            sizeLimit: '120MB'
-        }
+        bodyParser: false
     }
 }

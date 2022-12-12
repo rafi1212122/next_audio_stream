@@ -3,7 +3,8 @@ import { useMediaQuery } from "@mantine/hooks"
 import axios from "axios"
 import Head from "next/head"
 import Link from "next/link"
-import { Fragment, useContext, useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
+import { MusicCol } from "../components/Music/MusicsGrid"
 import DataContext from "../helpers/DataContext"
 
 export default function Home() {
@@ -66,21 +67,7 @@ export default function Home() {
       <Grid columns={10}>
       {recentIds?.slice(0,getRecentCutCount()).map((i, index)=>{
           let music = recentData.find(v => v.id === i)
-          return music ? (
-              <Grid.Col key={music.id} span={5} sm={10/3} md={10/4} xl={10/6}>
-                  <Link passHref href={`/albums/${music.album.id}`}>
-                      <Card component="a" shadow="sm" p="sm" radius="md" withBorder>
-                          <Stack spacing={0} align="flex-start">
-                              <Image height={'7rem'} width={'7rem'} radius={'sm'} src={`/api/files/${music.album.albumArt}?q=75&w=256`}/>
-                              <Stack spacing={0} pt={'sm'}>
-                                  <Text lineClamp={1} weight={500}>{`${music.title} ${music.altTitle&&`(${music.altTitle})`}`}</Text>
-                                  <Text lineClamp={1} size="sm" color="dimmed">{music.artists.map((artist: any, index: any)=><Fragment key={index}>{index<music.artists.length&&index!==0?", ":""}{`${artist.name} ${`${artist.altName&&`(${artist.altName})`}`}`}</Fragment>)}</Text>
-                              </Stack>
-                          </Stack>
-                      </Card>
-                  </Link>
-              </Grid.Col>
-          ): 
+          return music ? <MusicCol music={music}/>: 
             <Grid.Col key={i} span={5} sm={10/3} md={10/4} xl={10/6}>
                 <Link passHref href={`/`}>
                     <Card component="a" shadow="sm" p="sm" radius="md" withBorder>
